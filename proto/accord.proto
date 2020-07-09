@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package proto;
+
+enum MessageType {
+    USERMSG = 0;
+}
+
+message Message {
+    MessageType type = 1;
+    fixed64 channelid = 2;
+    fixed64 senderid = 3;
+    string content = 4;
+}
