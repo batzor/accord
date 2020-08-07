@@ -1,14 +1,77 @@
 syntax = "proto3";
 
-package proto;
+package Accord;
+option go_package="github.com/qvntm/Accord/proto";
 
-enum MessageType {
-    USERMSG = 0;
+import "google/protobuf/timestamp.proto";
+
+
+
+message LoginRequest {
+    string password = 1;
+    string name     = 2;
 }
 
-message Message {
-    MessageType type = 1;
-    fixed64 channelid = 2;
-    fixed64 senderid = 3;
-    string content = 4;
+message LoginResponse {
+    string token = 1;
+}
+
+message LogoutRequest {
+    string token = 1;
+}
+
+message LogoutResponse {}
+
+message StreamRequest {
+    fixed64 channel_id = 1;
+    
+    oneof msg {
+        UserMessage user_msg = 2;
+        ConfMessage conf_msg = 3;
+    }
+
+    enum UserMsgType {
+        SEND_MSG = 0;
+        EDIT_MSG = 1;
+        DELETE_MSG = 2;
+    }
+
+    message UserMessage {
+        UserMsgType type = 1;
+        string content   = 2;
+    }
+
+    enum ConfMsgType {
+        EDIT_CHANNEL = 0;
+        EDIT_SERVER = 1;
+    }
+
+    message ConfMessage {
+        ConfMsgType type   = 1;
+        string placeholder = 2;
+    }
+}
+
+message StreamResponse {
+    google.protobuf.Timestamp timestamp = 1;
+
+    oneof event {
+        NewMessage new_msg  = 2;
+        UpdateMessage update_msg = 3;
+    }
+
+    message NewMessage {
+        fixed64 sender_id = 1;
+        string content    = 2;
+    }
+
+    message UpdateMessage {
+        string placeholder = 1;
+    }
+}
+
+service Chat {
+    rpc Login(LoginRequest) returns (LoginResponse) {}
+    rpc Logout(LogoutRequest) returns (LogoutResponse) {}
+    rpc Stream(stream StreamRequest) returns (stream StreamResponse) {}
 }
