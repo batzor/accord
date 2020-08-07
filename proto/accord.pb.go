@@ -7,8 +7,12 @@
 package proto
 
 import (
+	context "context"
 	proto "github.com/golang/protobuf/proto"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -985,4 +989,189 @@ func file_accord_proto_init() {
 	file_accord_proto_rawDesc = nil
 	file_accord_proto_goTypes = nil
 	file_accord_proto_depIdxs = nil
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConnInterface
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion6
+
+// ChatClient is the client API for Chat service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type ChatClient interface {
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+	Stream(ctx context.Context, opts ...grpc.CallOption) (Chat_StreamClient, error)
+}
+
+type chatClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewChatClient(cc grpc.ClientConnInterface) ChatClient {
+	return &chatClient{cc}
+}
+
+func (c *chatClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, "/Accord.Chat/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error) {
+	out := new(LogoutResponse)
+	err := c.cc.Invoke(ctx, "/Accord.Chat/Logout", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) Stream(ctx context.Context, opts ...grpc.CallOption) (Chat_StreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Chat_serviceDesc.Streams[0], "/Accord.Chat/Stream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &chatStreamClient{stream}
+	return x, nil
+}
+
+type Chat_StreamClient interface {
+	Send(*StreamRequest) error
+	Recv() (*StreamResponse, error)
+	grpc.ClientStream
+}
+
+type chatStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *chatStreamClient) Send(m *StreamRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *chatStreamClient) Recv() (*StreamResponse, error) {
+	m := new(StreamResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// ChatServer is the server API for Chat service.
+type ChatServer interface {
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
+	Stream(Chat_StreamServer) error
+}
+
+// UnimplementedChatServer can be embedded to have forward compatible implementations.
+type UnimplementedChatServer struct {
+}
+
+func (*UnimplementedChatServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (*UnimplementedChatServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
+func (*UnimplementedChatServer) Stream(Chat_StreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method Stream not implemented")
+}
+
+func RegisterChatServer(s *grpc.Server, srv ChatServer) {
+	s.RegisterService(&_Chat_serviceDesc, srv)
+}
+
+func _Chat_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Accord.Chat/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Accord.Chat/Logout",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_Stream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ChatServer).Stream(&chatStreamServer{stream})
+}
+
+type Chat_StreamServer interface {
+	Send(*StreamResponse) error
+	Recv() (*StreamRequest, error)
+	grpc.ServerStream
+}
+
+type chatStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *chatStreamServer) Send(m *StreamResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *chatStreamServer) Recv() (*StreamRequest, error) {
+	m := new(StreamRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+var _Chat_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "Accord.Chat",
+	HandlerType: (*ChatServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _Chat_Login_Handler,
+		},
+		{
+			MethodName: "Logout",
+			Handler:    _Chat_Logout_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Stream",
+			Handler:       _Chat_Stream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "accord.proto",
 }
