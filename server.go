@@ -11,31 +11,34 @@ import (
 	pb "github.com/qvntm/Accord/proto"
 )
 
-type server struct{}
+type AccordServer struct{}
 
-func (s *server) Login(_ context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+func (s AccordServer) Login(_ context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	return nil, fmt.Errorf("unimplemented!")
 }
 
-func (s *server) Logout(_ context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
+func (s AccordServer) Logout(_ context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
 	return nil, fmt.Errorf("unimplemented!")
 }
 
-func (s *server) Stream(srv pb.Chat_StreamServer) error {
+func (s AccordServer) Stream(srv pb.Chat_StreamServer) error {
 	return fmt.Errorf("unimplemented!")
 }
 
-func main() {
+func (s AccordServer) Start() error {
 	fmt.Println("Starting up!")
 	listener, err := net.Listen("tcp", "0.0.0.0:12345")
 	if err != nil {
 		log.Fatalf("Failed to init listener: %v", err)
 	}
 
-	s := grpc.NewServer()
-	pb.RegisterChatServer(s, &server{})
+	srv := grpc.NewServer()
+	pb.RegisterChatServer(srv, s)
 
-	if err := s.Serve(listener); err != nil {
-		log.Fatalf("Failed to init server: %v", err)
-	}
+	return srv.Serve(listener)
+}
+
+func main() {
+	s := new(AccordServer)
+	s.Start()
 }
