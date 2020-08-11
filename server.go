@@ -8,7 +8,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	pb "github.com/qvntm/Accord/proto"
+	pb "github.com/qvntm/Accord/pb"
 )
 
 type AccordServer struct{}

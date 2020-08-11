@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/qvntm/Accord/proto"
+	pb "github.com/qvntm/Accord/pb"
 )
 
 type AccordClient struct {
