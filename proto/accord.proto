@@ -5,12 +5,12 @@ option go_package=".;pb";
 
 import "google/protobuf/timestamp.proto";
 
-message RegisterRequest {
+message CreateUserRequest {
     string password = 1;
     string username = 2;
 }
 
-message RegisterResponse {
+message CreateUserResponse {
     string token = 1;
 }
 
@@ -78,6 +78,7 @@ message StreamResponse {
 }
 
 service Chat {
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
     rpc Login(LoginRequest) returns (LoginResponse) {}
     rpc Logout(LogoutRequest) returns (LogoutResponse) {}
     rpc Stream(stream StreamRequest) returns (stream StreamResponse) {}
