@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	auth "github.com/qvntm/Accord/auth"
 	pb "github.com/qvntm/Accord/pb"
 )
 
@@ -23,14 +24,14 @@ const (
 type AccordServer struct {
 	mutex      sync.RWMutex
 	users      map[string]*User
-	jwtManager *JWTManager
+	jwtManager *auth.JWTManager
 }
 
 func NewAccordServer() *AccordServer {
 
 	return &AccordServer{
 		users:      make(map[string]*User),
-		jwtManager: NewJWTManager(secretKey, tokenDuration),
+		jwtManager: auth.NewJWTManager(secretKey, tokenDuration),
 	}
 }
 
@@ -58,9 +59,7 @@ func (s *AccordServer) CreateUser(_ context.Context, req *pb.CreateUserRequest) 
 
 	s.users[user.Username] = user
 
-	res := &pb.CreateUserResponse{
-		Token: "somesortoftoken",
-	}
+	res := &pb.CreateUserResponse{}
 	log.Printf("New user %s created", user.Username)
 	return res, nil
 }
@@ -69,16 +68,16 @@ func (s *AccordServer) Login(_ context.Context, req *pb.LoginRequest) (*pb.Login
 	user := s.GetUser(req.GetUsername())
 
 	if user == nil {
-		return nil, status.Errorf(codes.NotFound, "incorrect username")
+		return nil, status.Errorf(codes.NotFound, "Username not found.")
 	}
 	if !user.IsCorrectPassword(req.GetPassword()) {
-		return nil, status.Errorf(codes.NotFound, "incorrect password")
+		return nil, status.Errorf(codes.InvalidArgument, "Incorrect password.")
 	}
 
-	token, err := s.jwtManager.Generate(user)
+	token, err := s.jwtManager.Generate(user.Username, user.Role)
 	if err != nil {
 		log.Print("token generation failed!")
-		return nil, status.Errorf(codes.Internal, "cannot generate access token")
+		return nil, status.Errorf(codes.Internal, "Cannot generate access token")
 	}
 
 	res := &pb.LoginResponse{Token: token}
@@ -87,16 +86,16 @@ func (s *AccordServer) Login(_ context.Context, req *pb.LoginRequest) (*pb.Login
 }
 
 func (s *AccordServer) Logout(_ context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
-	return nil, fmt.Errorf("unimplemented!")
+	return nil, status.Errorf(codes.Unimplemented, "Unimplemented!")
 }
 
 func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
-	return fmt.Errorf("unimplemented!")
+	return status.Errorf(codes.Unimplemented, "Unimplemented!")
 }
 
-func (s *AccordServer) Start() error {
+func (s *AccordServer) Start(serv_addr string) (string, error) {
 	fmt.Println("Starting up!")
-	listener, err := net.Listen("tcp", "0.0.0.0:12345")
+	listener, err := net.Listen("tcp", serv_addr)
 	if err != nil {
 		log.Fatalf("Failed to init listener: %v", err)
 	}
@@ -104,10 +103,6 @@ func (s *AccordServer) Start() error {
 	srv := grpc.NewServer()
 	pb.RegisterChatServer(srv, s)
 
-	return srv.Serve(listener)
-}
-
-func main() {
-	s := NewAccordServer()
-	s.Start()
+	go srv.Serve(listener)
+	return listener.Addr().String(), nil
 }

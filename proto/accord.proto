@@ -10,9 +10,7 @@ message CreateUserRequest {
     string username = 2;
 }
 
-message CreateUserResponse {
-    string token = 1;
-}
+message CreateUserResponse {}
 
 message LoginRequest {
     string password = 1;

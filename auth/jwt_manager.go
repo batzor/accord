@@ -1,4 +1,4 @@
-package main
+package auth
 
 import (
 	"fmt"
@@ -26,13 +26,13 @@ func NewJWTManager(secretKey string, tokenDuration time.Duration) *JWTManager {
 }
 
 // Generate generates and signs a new token for a user
-func (manager *JWTManager) Generate(user *User) (string, error) {
+func (manager *JWTManager) Generate(username string, role string) (string, error) {
 	claims := UserClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(manager.tokenDuration).Unix(),
 		},
-		Username: user.Username,
-		Role:     user.Role,
+		Username: username,
+		Role:     role,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
