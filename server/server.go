@@ -24,6 +24,7 @@ const (
 type AccordServer struct {
 	mutex      sync.RWMutex
 	users      map[string]*User
+	channels   map[uint64]*Channel
 	jwtManager *auth.JWTManager
 }
 
