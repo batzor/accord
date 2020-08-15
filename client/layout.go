@@ -26,16 +26,16 @@ func layout(g *gocui.Gui) error {
 		input.Editable = true
 	}
 
-	if chats, err := g.SetView("chats", maxX-30, 0, maxX-1, maxY-40); err != nil {
+	if channels, err := g.SetView("channels", maxX-30, 0, maxX-1, maxY-15); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		chats.Title = " chats: "
-		chats.Autoscroll = false
-		chats.Wrap = true
+		channels.Title = " channels: "
+		channels.Autoscroll = false
+		channels.Wrap = true
 	}
 
-	if users, err := g.SetView("users", maxX-30, maxY-40, maxX-1, maxY-1); err != nil {
+	if users, err := g.SetView("users", maxX-30, maxY-15, maxX-1, maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -44,15 +44,27 @@ func layout(g *gocui.Gui) error {
 		users.Wrap = true
 	}
 
-	if name, err := g.SetView("name", maxX/2-10, maxY/2-1, maxX/2+10, maxY/2+1); err != nil {
+	if password, err := g.SetView("password", maxX/2-15, maxY/2-1, maxX/2+15, maxY/2+1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		g.SetCurrentView("name")
-		name.Title = " name: "
-		name.Autoscroll = false
-		name.Wrap = true
-		name.Editable = true
+		g.SetViewOnBottom("password")
+		password.Title = " Please, enter password: "
+		password.Autoscroll = false
+		password.Wrap = true
+		password.Editable = true
+	}
+
+	if username, err := g.SetView("username", maxX/2-15, maxY/2-1, maxX/2+15, maxY/2+1); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		g.SetViewOnTop("username")
+		g.SetCurrentView("username")
+		username.Title = " Please, enter username: "
+		username.Autoscroll = false
+		username.Wrap = true
+		username.Editable = true
 	}
 	return nil
 }
