@@ -94,7 +94,7 @@ func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 	return status.Errorf(codes.Unimplemented, "Unimplemented!")
 }
 
-func (s *AccordServer) Start(serv_addr string) (string, error) {
+func (s *AccordServer) Start(serv_addr string) {
 	fmt.Println("Starting up!")
 	listener, err := net.Listen("tcp", serv_addr)
 	if err != nil {
@@ -104,6 +104,5 @@ func (s *AccordServer) Start(serv_addr string) (string, error) {
 	srv := grpc.NewServer()
 	pb.RegisterChatServer(srv, s)
 
-	go srv.Serve(listener)
-	return listener.Addr().String(), nil
+	srv.Serve(listener)
 }
