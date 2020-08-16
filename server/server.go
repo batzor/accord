@@ -36,6 +36,31 @@ func NewAccordServer() *AccordServer {
 	}
 }
 
+func (s *AccordServer) PrepareChannels() error {
+	// adding dummy channels so far.
+	user1, _ := NewUser("baz", "baz123", "member")
+	user2, _ := NewUser("tmr", "tmr456", "member")
+	dummyUsers := []User{*user1, *user2}
+	channels := []Channel{
+		*NewChannel(01234, dummyUsers, false),
+		*NewChannel(56789, dummyUsers, true),
+	}
+
+	for _, channel := range channels {
+		go channel.Listen()
+	}
+	return nil
+}
+
+func (s *AccordServer) GetChannelByID(channelID uint64) (*Channel, error) {
+	for _, channel := range s.channels {
+		if channel.channelID == channelID {
+			return channel, nil
+		}
+	}
+	return nil, fmt.Errorf("channel with id %d does not exist on the server", channelID)
+}
+
 func (s *AccordServer) GetUser(username string) *User {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
@@ -91,7 +116,53 @@ func (s *AccordServer) Logout(_ context.Context, req *pb.LogoutRequest) (*pb.Log
 }
 
 func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
-	return status.Errorf(codes.Unimplemented, "Unimplemented!")
+	var channel *Channel = nil
+	ctx := srv.Context()
+
+	for {
+		req, err := srv.Recv()
+
+		if err != nil {
+			log.Fatalf("Error while reading client stream: %v", err)
+		}
+
+		if channel == nil {
+			channel, err = s.GetChannelByID(req.GetChannelId())
+			if err != nil {
+				return status.Errorf(codes.InvalidArgument, "invalid channel ID: %v", err)
+			}
+			userID := uint64(12345)
+			channel.usersToStreams[userID] = srv
+		}
+
+		var channelMessage *Message = nil
+
+		// verify StreamRequest contains a valid message type
+		switch req.GetMsg().(type) {
+		case *pb.StreamRequest_UserMsg:
+			msg := req.GetUserMsg()
+			channelMessage = &Message{
+				timestamp: time.Now(),
+				from:      "don't know",
+				content:   msg.GetContent(),
+			}
+		case *pb.StreamRequest_ConfMsg:
+			return status.Errorf(codes.Unimplemented, "configuration message handling is not implemented")
+		default:
+			return status.Errorf(codes.InvalidArgument, "invalid message type")
+		}
+
+		if channelMessage != nil {
+			select {
+			// handle abrupt client disconnection
+			case <-ctx.Done():
+				return status.Error(codes.Canceled, ctx.Err().Error())
+			case channel.msgc <- *channelMessage:
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *AccordServer) Start(serv_addr string) {
@@ -99,6 +170,10 @@ func (s *AccordServer) Start(serv_addr string) {
 	listener, err := net.Listen("tcp", serv_addr)
 	if err != nil {
 		log.Fatalf("Failed to init listener: %v", err)
+	}
+
+	if err := s.PrepareChannels(); err != nil {
+		log.Fatalf("Failed to startup servers channels: %v", err)
 	}
 
 	srv := grpc.NewServer()
