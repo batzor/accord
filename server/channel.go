@@ -1,8 +1,16 @@
 package server
 
+import (
+	"log"
+	"time"
+
+	pb "github.com/qvntm/Accord/pb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
 // Message represents a single message in a channel.
 type Message struct {
-	timestamp uint64
+	timestamp time.Time
 	from      string
 	content   string
 }
@@ -21,6 +29,7 @@ type Channel struct {
 	channelID           uint64
 	messages            []Message
 	msgc                chan Message
+	usersToStreams      map[uint64]pb.Chat_StreamServer
 	users               []User
 	pinnedMsg           uint64
 	isPublic            bool
@@ -33,6 +42,7 @@ func NewChannel(uid uint64, users []User, isPublic bool) *Channel {
 		channelID:           uid,
 		messages:            []Message{},
 		msgc:                make(chan Message),
+		usersToStreams:      map[uint64]pb.Chat_StreamServer{},
 		users:               users,
 		pinnedMsg:           0,
 		isPublic:            isPublic,
@@ -53,5 +63,24 @@ func (ch *Channel) Listen() {
 
 // Broadcast sends message to all users in the chat.
 func (ch *Channel) Broadcast(msg Message) {
-	return
+	for _, user := range ch.users {
+		// TODO: also check for permissions to read (i.e. receive broadcast)
+		userID := uint64(12345)
+		if stream := ch.usersToStreams[userID]; stream != nil {
+			newMessage := &pb.StreamResponse_NewMsg{
+				NewMsg: &pb.StreamResponse_NewMessage{
+					SenderId: 12345,
+					Content:  msg.content,
+				},
+			}
+			response := &pb.StreamResponse{
+				Timestamp: timestamppb.New(msg.timestamp),
+				Event:     newMessage,
+			}
+			if err := stream.Send(response); err != nil {
+				log.Printf("Could not send message to %s in channel %v\n", user.Username, *ch)
+			}
+		}
+	}
+
 }
