@@ -11,14 +11,17 @@ import (
 func TestClientCreateUser(t *testing.T) {
 	t.Parallel()
 
-	s := server.NewAccordServer()
-	addr, err := s.Start("0.0.0.0:0")
-	require.NoError(t, err)
+	serverAddr := "0.0.0.0:50051"
+	go func() {
+		s := server.NewAccordServer()
+		s.Start(serverAddr)
+		t.Log("Server stopped.")
+	}()
 
 	c := client.NewAccordClient()
-	c.Connect(addr)
+	c.Connect(serverAddr)
 
-	err = c.CreateUser("testuser1", "testpw1")
+	err := c.CreateUser("testuser1", "testpw1")
 	require.NoError(t, err)
 
 	err = c.Login("testuser1", "testpw1")
@@ -28,13 +31,17 @@ func TestClientCreateUser(t *testing.T) {
 func TestClientLogin(t *testing.T) {
 	t.Parallel()
 
-	s := server.NewAccordServer()
-	addr, err := s.Start("0.0.0.0:0")
+	serverAddr := "0.0.0.0:50051"
+	go func() {
+		s := server.NewAccordServer()
+		s.Start(serverAddr)
+		t.Log("Server stopped.")
+	}()
 
 	c := client.NewAccordClient()
-	c.Connect(addr)
+	c.Connect(serverAddr)
 
-	err = c.CreateUser("testuser1", "testpw1")
+	err := c.CreateUser("testuser1", "testpw1")
 	require.NoError(t, err)
 
 	err = c.Login("testuser1", "testpw2")
