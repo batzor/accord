@@ -27,6 +27,21 @@ message LogoutRequest {
 
 message LogoutResponse {}
 
+message Channel {
+    fixed64 id = 1;
+    string name = 2;
+}
+
+message GetChannelsRequest {
+    fixed64 user_id = 1;
+    fixed64 server_id = 2;
+}
+
+message GetChannelsResponse {
+    fixed64 current_channel = 1;
+    repeated Channel channels = 2;
+}
+
 message StreamRequest {
     fixed64 channel_id = 1;
     
@@ -79,5 +94,10 @@ service Chat {
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
     rpc Login(LoginRequest) returns (LoginResponse) {}
     rpc Logout(LogoutRequest) returns (LogoutResponse) {}
+
+    // Returns information about particular user's channels.
+    rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
+
+
     rpc Stream(stream StreamRequest) returns (stream StreamResponse) {}
 }
