@@ -11,9 +11,16 @@ import (
 	pb "github.com/qvntm/Accord/pb"
 )
 
+type Channel struct {
+	ID   uint64
+	Name string
+}
+
 type AccordClient struct {
 	pb.ChatClient
-	Token string
+	Token            string
+	currentChannelID uint64
+	channels         []Channel
 }
 
 func NewAccordClient() *AccordClient {
@@ -63,4 +70,27 @@ func (cli *AccordClient) Login(username string, password string) error {
 	}
 
 	return err
+}
+
+func (cli *AccordClient) GetChannelInfo() {
+	req := &pb.GetChannelsRequest{
+		UserId:   12345,
+		ServerId: 67890,
+	}
+
+	log.Println("Getting information about user channels...")
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	res, err := cli.ChatClient.GetChannels(ctx, req)
+	if err != nil {
+		log.Fatalf("Could not get the channel info: %v", err)
+	}
+	cli.currentChannelID = res.GetCurrentChannel()
+	for _, resChannel := range res.GetChannels() {
+		cli.channels = append(cli.channels, Channel{
+			ID:   resChannel.GetId(),
+			Name: resChannel.GetName(),
+		})
+	}
 }
