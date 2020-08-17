@@ -115,6 +115,28 @@ func (s *AccordServer) Logout(_ context.Context, req *pb.LogoutRequest) (*pb.Log
 	return nil, status.Errorf(codes.Unimplemented, "Unimplemented!")
 }
 
+func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsRequest) (*pb.GetChannelsResponse, error) {
+	if ctx.Err() == context.Canceled {
+		log.Println("Client has cancelled the request.")
+		return nil, status.Errorf(codes.DeadlineExceeded, "client has cancelled the request")
+	}
+
+	res := &pb.GetChannelsResponse{
+		CurrentChannel: uint64(67890),
+		Channels: []*pb.Channel{
+			{
+				Id:   uint64(67890),
+				Name: "tmrbaz",
+			},
+			{
+				Id:   uint64(12345),
+				Name: "baztmr",
+			},
+		},
+	}
+	return res, nil
+}
+
 func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 	var channel *Channel = nil
 	ctx := srv.Context()
