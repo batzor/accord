@@ -1,4 +1,4 @@
-package client
+package cliapp
 
 import (
 	//"context"
@@ -14,8 +14,8 @@ import (
 
 var (
 	currentChannel string
-	username string
-	streamClient pb.Chat_StreamClient
+	username       string
+	streamClient   pb.Chat_StreamClient
 )
 
 func enterUsername(g *gocui.Gui, v *gocui.View) error {
@@ -70,7 +70,7 @@ func login(g *gocui.Gui, v *gocui.View) error {
 	g.SetCurrentView("input")
 
 	currentChannel = "baztmr" // ideally, we have to fetch an ID of the last channel user has used.
-	
+
 	channels := []string{"baztmr", "tmrbaz", "temirtau"} // ideally, we have to fetch a list of all channels where user belongs.
 	channelsView, _ := g.View("channels")
 	channelsView.Title = fmt.Sprintf(" %d channels: ", len(channels))

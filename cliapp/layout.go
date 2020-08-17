@@ -1,4 +1,4 @@
-package client
+package cliapp
 
 import "github.com/jroimartin/gocui"
 
