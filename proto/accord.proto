@@ -33,13 +33,12 @@ message Channel {
 }
 
 message GetChannelsRequest {
-    fixed64 user_id = 1;
+    string username = 1;
     fixed64 server_id = 2;
 }
 
 message GetChannelsResponse {
-    fixed64 current_channel = 1;
-    repeated Channel channels = 2;
+    repeated Channel channels = 1;
 }
 
 message StreamRequest {
