@@ -11,6 +11,7 @@ import (
 func TestClientCreateUser(t *testing.T) {
 	t.Parallel()
 
+	serverID := uint64(12345)
 	serverAddr := "0.0.0.0:50051"
 	go func() {
 		s := server.NewAccordServer()
@@ -18,7 +19,7 @@ func TestClientCreateUser(t *testing.T) {
 		t.Log("Server stopped.")
 	}()
 
-	c := client.NewAccordClient()
+	c := client.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
 	err := c.CreateUser("testuser1", "testpw1")
@@ -31,6 +32,7 @@ func TestClientCreateUser(t *testing.T) {
 func TestClientLogin(t *testing.T) {
 	t.Parallel()
 
+	serverID := uint64(12345)
 	serverAddr := "0.0.0.0:50051"
 	go func() {
 		s := server.NewAccordServer()
@@ -38,7 +40,7 @@ func TestClientLogin(t *testing.T) {
 		t.Log("Server stopped.")
 	}()
 
-	c := client.NewAccordClient()
+	c := client.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
 	err := c.CreateUser("testuser1", "testpw1")
