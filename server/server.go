@@ -29,36 +29,34 @@ type AccordServer struct {
 }
 
 func NewAccordServer() *AccordServer {
-
+	// adding dummy data so far.
+	user1, _ := NewUser("baz", "baz123", "member")
+	user2, _ := NewUser("tmr", "tmr456", "member")
+	dummyUsersMap := map[string]*User{
+		"baz": user1,
+		"tmr": user2,
+	}
+	dummyUsersSlice := []User{*user1, *user2}
+	channels := map[uint64]*Channel{
+		01234: NewChannel(01234, dummyUsersSlice, false),
+		56789: NewChannel(56789, dummyUsersSlice, true),
+	}
 	return &AccordServer{
-		users:      make(map[string]*User),
+		users:      dummyUsersMap, // ideally, has to be empty when server is initialized.
+		channels:   channels,
 		jwtManager: auth.NewJWTManager(secretKey, tokenDuration),
 	}
 }
 
-func (s *AccordServer) PrepareChannels() error {
-	// adding dummy channels so far.
-	user1, _ := NewUser("baz", "baz123", "member")
-	user2, _ := NewUser("tmr", "tmr456", "member")
-	dummyUsers := []User{*user1, *user2}
-	channels := []Channel{
-		*NewChannel(01234, dummyUsers, false),
-		*NewChannel(56789, dummyUsers, true),
-	}
-
-	for _, channel := range channels {
+func (s *AccordServer) PrepareChannels() {
+	for _, channel := range s.channels {
 		go channel.Listen()
 	}
-	return nil
 }
 
-func (s *AccordServer) GetChannelByID(channelID uint64) (*Channel, error) {
-	for _, channel := range s.channels {
-		if channel.channelID == channelID {
-			return channel, nil
-		}
-	}
-	return nil, fmt.Errorf("channel with id %d does not exist on the server", channelID)
+func (s *AccordServer) AddNewChannel(ch Channel) {
+	s.channels[ch.channelID] = &ch
+	go ch.Listen()
 }
 
 func (s *AccordServer) GetUser(username string) *User {
@@ -121,40 +119,40 @@ func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsReque
 		return nil, status.Errorf(codes.DeadlineExceeded, "client has cancelled the request")
 	}
 
+	if req.GetUsername() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "username cannot be empty")
+	}
+
 	res := &pb.GetChannelsResponse{
-		CurrentChannel: uint64(67890),
-		Channels: []*pb.Channel{
-			{
-				Id:   uint64(67890),
-				Name: "tmrbaz",
-			},
-			{
-				Id:   uint64(12345),
-				Name: "baztmr",
-			},
-		},
+		Channels: []*pb.Channel{},
+	}
+	for _, channel := range s.channels {
+		res.Channels = append(res.Channels, &pb.Channel{
+			Id:   channel.channelID,
+			Name: channel.name,
+		})
 	}
 	return res, nil
 }
 
 func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 	var channel *Channel = nil
+	var username string
 	ctx := srv.Context()
 
 	for {
 		req, err := srv.Recv()
-
 		if err != nil {
 			log.Fatalf("Error while reading client stream: %v", err)
 		}
 
 		if channel == nil {
-			channel, err = s.GetChannelByID(req.GetChannelId())
-			if err != nil {
+			channel = s.channels[req.GetChannelId()]
+			if channel != nil {
 				return status.Errorf(codes.InvalidArgument, "invalid channel ID: %v", err)
 			}
-			userID := uint64(12345)
-			channel.usersToStreams[userID] = srv
+			username = "tmr" // TODO: decide how to get username from connection
+			channel.usersToStreams[username] = srv
 		}
 
 		var channelMessage *Message = nil
@@ -162,13 +160,15 @@ func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 		// verify StreamRequest contains a valid message type
 		switch req.GetMsg().(type) {
 		case *pb.StreamRequest_UserMsg:
+			// TODO: distinguish between WRITE/MODIFY/DELETE messages.
 			msg := req.GetUserMsg()
 			channelMessage = &Message{
 				timestamp: time.Now(),
-				from:      "don't know",
+				from:      username,
 				content:   msg.GetContent(),
 			}
 		case *pb.StreamRequest_ConfMsg:
+			// TODO: Implement configuration message changes.
 			return status.Errorf(codes.Unimplemented, "configuration message handling is not implemented")
 		default:
 			return status.Errorf(codes.InvalidArgument, "invalid message type")
@@ -194,9 +194,7 @@ func (s *AccordServer) Start(serv_addr string) {
 		log.Fatalf("Failed to init listener: %v", err)
 	}
 
-	if err := s.PrepareChannels(); err != nil {
-		log.Fatalf("Failed to startup servers channels: %v", err)
-	}
+	s.PrepareChannels()
 
 	srv := grpc.NewServer()
 	pb.RegisterChatServer(srv, s)
