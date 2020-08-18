@@ -1,26 +1,19 @@
 package cliapp
 
 import (
-	//"context"
 	"fmt"
-	//"log"
 
 	"github.com/jroimartin/gocui"
-	"github.com/qvntm/Accord/pb"
-	//"google.golang.org/grpc"
-	//"google.golang.org/grpc/codes"
-	//"google.golang.org/grpc/status"
 )
 
 var (
-	currentChannel string
-	username       string
-	streamClient   pb.Chat_StreamClient
+	// tempUsername stores the username before the user has logged in
+	tempUsername string
 )
 
 func enterUsername(g *gocui.Gui, v *gocui.View) error {
-	username = v.Buffer()
-	if username == "" {
+	tempUsername = v.Buffer()
+	if tempUsername == "" {
 		// do nothing until user enters smth and presses "Enter" again
 		return nil
 	}
@@ -31,7 +24,7 @@ func enterUsername(g *gocui.Gui, v *gocui.View) error {
 }
 
 // Connect connects to the server and does some initialization
-func login(g *gocui.Gui, v *gocui.View) error {
+func (app *ClientApp) login(g *gocui.Gui, v *gocui.View) error {
 	password := v.Buffer()
 	if password == "" {
 		// do nothing until user enters smth and presses "Enter" again
@@ -39,11 +32,9 @@ func login(g *gocui.Gui, v *gocui.View) error {
 	}
 	v.Clear()
 
-	/*_, err := grpc.Dial("localhost:50051")
-	if err != nil {
-		log.Fatalf("Could not connect to the server: %v", err)
-	}*/
-	//defer cc.Close()
+	if err := app.client.Connect("0.0.0.0:50051"); err != nil {
+		return fmt.Errorf("couldn't connect to server: %v", err)
+	}
 
 	/*c := pb.NewChatClient(cc)
 	loginRequest := &pb.LoginRequest{
@@ -123,7 +114,7 @@ func login(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func send(g *gocui.Gui, v *gocui.View) error {
+func (app *ClientApp) send(g *gocui.Gui, v *gocui.View) error {
 	messagesView, _ := g.View("messages")
 	v.Clear()
 	fmt.Fprintln(messagesView, "Dummy message has been sent")
