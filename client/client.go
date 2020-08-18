@@ -19,12 +19,18 @@ type Channel struct {
 type AccordClient struct {
 	pb.ChatClient
 	Token            string
-	currentChannelID uint64
-	channels         []Channel
+	Username         string
+	ServerID         uint64
+	CurrentChannelID uint64
+	Channels         []Channel
 }
 
-func NewAccordClient() *AccordClient {
-	return &AccordClient{}
+func NewAccordClient(serverID uint64) *AccordClient {
+	return &AccordClient{
+		Token:    "",
+		Username: "",
+		ServerID: serverID,
+	}
 }
 
 func (cli *AccordClient) Connect(conn_addr string) error {
@@ -67,15 +73,20 @@ func (cli *AccordClient) Login(username string, password string) error {
 	if err == nil {
 		log.Print("Acquired new token: ", cli.Token)
 		cli.Token = res.GetToken()
+		cli.Username = username
 	}
 
 	return err
 }
 
-func (cli *AccordClient) GetChannelInfo() {
+func (cli *AccordClient) GetChannelInfo() error {
+	if cli.Token == "" && cli.Username == "" {
+		return fmt.Errorf("not logged in, JWT token is not obtained or username was not provided")
+	}
+
 	req := &pb.GetChannelsRequest{
-		UserId:   12345,
-		ServerId: 67890,
+		Username: cli.Username,
+		ServerId: cli.ServerID,
 	}
 
 	log.Println("Getting information about user channels...")
@@ -84,13 +95,63 @@ func (cli *AccordClient) GetChannelInfo() {
 
 	res, err := cli.ChatClient.GetChannels(ctx, req)
 	if err != nil {
-		log.Fatalf("Could not get the channel info: %v", err)
+		return fmt.Errorf("Could not get the channel info: %v", err)
 	}
-	cli.currentChannelID = res.GetCurrentChannel()
 	for _, resChannel := range res.GetChannels() {
-		cli.channels = append(cli.channels, Channel{
+		cli.Channels = append(cli.Channels, Channel{
 			ID:   resChannel.GetId(),
 			Name: resChannel.GetName(),
 		})
 	}
+	if len(cli.Channels) > 0 {
+		cli.CurrentChannelID = cli.Channels[0].ID
+	}
+	return nil
+}
+
+func (cli *AccordClient) Stream() (<-chan Message, chan<- Message, error) {
+	chatClient, err := cli.ChatClient.Stream(context.Background())
+	if err != nil {
+		return nil, nil, fmt.Errorf("Stream RPC failed: %v", err)
+	}
+
+	sendc := make(chan Message)
+	go func() {
+		select {
+		case msg := <-sendc:
+			switch msg.GetMsg().(type) {
+			case *UserMessage:
+				userMsg := msg.GetUserMsg()
+				req := &pb.StreamRequest{
+					Msg: &pb.StreamRequest_UserMsg{
+						UserMsg: &pb.StreamRequest_UserMessage{
+							Type:    UserToPBMessages[userMsg.Type],
+							Content: userMsg.Content,
+						},
+					},
+				}
+				if err := chatClient.Send(req); err != nil {
+					// TODO: Close sendc (Find the appropriate way to do it)
+					return
+				}
+			// TODO: case ConfMessage: (ConfMessage is not declared yet)
+			default:
+				// TODO: Close sendc (Find the appropriate way to do it)
+				return
+			}
+			// TODO: case <-ctx.Done() (Need smth like that to check for server failure)
+		}
+	}()
+
+	recvc := make(chan Message)
+	/*go func() {
+		for {
+			req, err := chatClient.Recv()
+			if err != nil {
+
+			}
+		}
+	}()*/
+
+	return recvc, sendc, nil
 }
