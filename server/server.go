@@ -19,12 +19,15 @@ const (
 )
 
 type AccordServer struct {
-	authServer *AuthServer
+	authServer      *AuthServer
+	authInterceptor *AuthInterceptor
 }
 
 func NewAccordServer() *AccordServer {
+	authServer := NewAuthServer()
 	return &AccordServer{
-		authServer: NewAuthServer(),
+		authServer:      authServer,
+		authInterceptor: NewAuthInterceptor(authServer.JWTManager()),
 	}
 }
 

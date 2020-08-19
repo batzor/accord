@@ -27,6 +27,10 @@ func NewAuthServer() *AuthServer {
 	}
 }
 
+func (s *AuthServer) JWTManager() *auth.JWTManager {
+	return s.jwtManager
+}
+
 func (s *AuthServer) GetUser(username string) *User {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
