@@ -12,7 +12,7 @@ import (
 )
 
 type AccordClient struct {
-	pb.ChatClient
+	pb.AuthServiceClient
 	Token string
 }
 
@@ -27,7 +27,7 @@ func (cli *AccordClient) Connect(conn_addr string) error {
 		return err
 	}
 
-	cli.ChatClient = pb.NewChatClient(conn)
+	cli.AuthServiceClient = pb.NewAuthServiceClient(conn)
 	fmt.Println("Successfully started!")
 	return nil
 }
@@ -42,7 +42,7 @@ func (cli *AccordClient) CreateUser(username string, password string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := cli.ChatClient.CreateUser(ctx, req)
+	_, err := cli.AuthServiceClient.CreateUser(ctx, req)
 	return err
 }
 
@@ -56,10 +56,10 @@ func (cli *AccordClient) Login(username string, password string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	res, err := cli.ChatClient.Login(ctx, req)
+	res, err := cli.AuthServiceClient.Login(ctx, req)
 	if err == nil {
 		log.Print("Acquired new token: ", cli.Token)
-		cli.Token = res.GetToken()
+		cli.Token = res.GetAccessToken()
 	}
 
 	return err
