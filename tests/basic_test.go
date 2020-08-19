@@ -18,10 +18,10 @@ func TestClientCreateUser(t *testing.T) {
 	c := client.NewAccordClient()
 	c.Connect(addr)
 
-	err = c.CreateUser("testuser1", "testpw1")
+	err = c.AuthClient().CreateUser("testuser1", "testpw1")
 	require.NoError(t, err)
 
-	err = c.Login("testuser1", "testpw1")
+	_, err = c.AuthClient().Login("testuser1", "testpw1")
 	require.NoError(t, err)
 }
 
@@ -34,15 +34,15 @@ func TestClientLogin(t *testing.T) {
 	c := client.NewAccordClient()
 	c.Connect(addr)
 
-	err = c.CreateUser("testuser1", "testpw1")
+	err = c.AuthClient().CreateUser("testuser1", "testpw1")
 	require.NoError(t, err)
 
-	err = c.Login("testuser1", "testpw2")
+	_, err = c.AuthClient().Login("testuser1", "testpw2")
 	require.NotNil(t, err)
 
-	err = c.Login("testuser2", "testpw1")
+	_, err = c.AuthClient().Login("testuser2", "testpw1")
 	require.NotNil(t, err)
 
-	err = c.Login("testuser1", "testpw1")
+	_, err = c.AuthClient().Login("testuser1", "testpw1")
 	require.Nil(t, err)
 }
