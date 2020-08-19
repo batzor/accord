@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	"google.golang.org/grpc"
@@ -16,13 +17,26 @@ type Channel struct {
 	Name string
 }
 
+// StreamRequestCommunication is used as a communication interface for users
+//  of this package who use "Stream" function.
+type StreamRequestCommunication struct {
+	Reqc   chan<- RequestMessage
+	Closec <-chan struct{}
+}
+
+// StreamResponseCommunication is used as a communication interface for users
+//  of this package who use "Stream" function.
+type StreamResponseCommunication struct {
+	Resc   <-chan ResponseMessage
+	Closec chan<- struct{}
+}
+
 type AccordClient struct {
 	pb.ChatClient
-	Token            string
-	Username         string
-	ServerID         uint64
-	CurrentChannelID uint64
-	Channels         []Channel
+	Token    string
+	Username string
+	ServerID uint64
+	Channels []Channel
 }
 
 func NewAccordClient(serverID uint64) *AccordClient {
@@ -34,6 +48,7 @@ func NewAccordClient(serverID uint64) *AccordClient {
 }
 
 func (cli *AccordClient) Connect(conn_addr string) error {
+	// TODO: add KeepAliveParams like this: https://github.com/grpc/grpc-go/blob/master/examples/features/keepalive/client/main.go
 	conn, err := grpc.Dial(conn_addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect to server: %v", err)
@@ -79,6 +94,7 @@ func (cli *AccordClient) Login(username string, password string) error {
 	return err
 }
 
+// GetChannelInfo adds all channel to client, related to the user.
 func (cli *AccordClient) GetChannelInfo() error {
 	if cli.Token == "" && cli.Username == "" {
 		return fmt.Errorf("not logged in, JWT token is not obtained or username was not provided")
@@ -103,55 +119,116 @@ func (cli *AccordClient) GetChannelInfo() error {
 			Name: resChannel.GetName(),
 		})
 	}
-	if len(cli.Channels) > 0 {
-		cli.CurrentChannelID = cli.Channels[0].ID
-	}
 	return nil
 }
 
-func (cli *AccordClient) Stream() (<-chan Message, chan<- Message, error) {
+// Subscribe creates stream client and returns communication channels, which are wrapped in structs,
+// to which messages can be pushed/received. In the structs, there are also channels for communicating
+// when the main request and response channels need to be closed.
+// "channelID" is only used to check that each request contains same channel ID.
+func (cli *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunication, *StreamResponseCommunication, error) {
 	chatClient, err := cli.ChatClient.Stream(context.Background())
 	if err != nil {
 		return nil, nil, fmt.Errorf("Stream RPC failed: %v", err)
 	}
 
-	sendc := make(chan Message)
+	reqc, closereqc := make(chan RequestMessage), make(chan struct{})
 	go func() {
-		select {
-		case msg := <-sendc:
+		defer close(closereqc)
+		for {
+			msg := <-reqc
+			if msg.ChannelID != channelID {
+				log.Printf("Inconsistent channel id used in channel: %v. Ignoring it.\n", reqc)
+				continue
+			}
 			switch msg.GetMsg().(type) {
-			case *UserMessage:
+			case *UserRequestMessage:
 				userMsg := msg.GetUserMsg()
 				req := &pb.StreamRequest{
+					ChannelId: msg.ChannelID,
 					Msg: &pb.StreamRequest_UserMsg{
 						UserMsg: &pb.StreamRequest_UserMessage{
-							Type:    UserToPBMessages[userMsg.Type],
+							Type:    UserRequestToPBMessages[userMsg.MsgType],
 							Content: userMsg.Content,
 						},
 					},
 				}
 				if err := chatClient.Send(req); err != nil {
-					// TODO: Close sendc (Find the appropriate way to do it)
+					log.Printf("Terminating client stream's send goroutine: %v\n", err)
 					return
 				}
-			// TODO: case ConfMessage: (ConfMessage is not declared yet)
+			case *ConfRequestMessage:
+				confMsg := msg.GetConfMsg()
+				req := &pb.StreamRequest{
+					ChannelId: msg.ChannelID,
+					Msg: &pb.StreamRequest_ConfMsg{
+						ConfMsg: &pb.StreamRequest_ConfMessage{
+							Type:        ConfRequestToPBMessages[confMsg.MsgType],
+							Placeholder: confMsg.Placeholder,
+						},
+					},
+				}
+				if err := chatClient.Send(req); err != nil {
+					log.Printf("Terminating client stream's send goroutine: %v\n", err)
+					return
+				}
 			default:
-				// TODO: Close sendc (Find the appropriate way to do it)
-				return
+				log.Printf("Invalid message type was passed: %v. Ignoring it.\n", reflect.TypeOf(msg.GetMsg()))
+				continue
 			}
-			// TODO: case <-ctx.Done() (Need smth like that to check for server failure)
 		}
 	}()
 
-	recvc := make(chan Message)
-	/*go func() {
+	resc, closeresc := make(chan ResponseMessage), make(chan struct{})
+	go func() {
+		defer close(resc)
 		for {
 			req, err := chatClient.Recv()
 			if err != nil {
+				log.Printf("Terminating client stream's recv goroutine: %v", err)
+				return
+			}
 
+			var resMessage ResponseMessage
+			switch req.GetEvent().(type) {
+			case *pb.StreamResponse_NewMsg:
+				newMsg := req.GetNewMsg()
+				resMessage = ResponseMessage{
+					Timestamp: req.Timestamp.AsTime(),
+					Msg: &NewMessageResponseMessage{
+						SenderID: newMsg.SenderId,
+						Content:  newMsg.Content,
+					},
+				}
+			case *pb.StreamResponse_UpdateMsg:
+				updateMsg := req.GetUpdateMsg()
+				resMessage = ResponseMessage{
+					Timestamp: req.Timestamp.AsTime(),
+					Msg: &UpdateMessageResponseMessage{
+						Placeholder: updateMsg.Placeholder,
+					},
+				}
+			default:
+				log.Printf("Invalid message type was received: %v. Ignoring it.\n", reflect.TypeOf(req.GetEvent()))
+				continue
+			}
+
+			select {
+			case <-closeresc:
+				log.Println("Terminating client stream's send goroutine by the signal of receiver.")
+				return
+			case resc <- resMessage:
 			}
 		}
-	}()*/
+	}()
 
-	return recvc, sendc, nil
+	reqComm := &StreamRequestCommunication{
+		Reqc:   reqc,
+		Closec: closereqc,
+	}
+	resComm := &StreamResponseCommunication{
+		Resc:   resc,
+		Closec: closeresc,
+	}
+	return reqComm, resComm, nil
 }
