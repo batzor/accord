@@ -17,6 +17,7 @@ const (
 )
 
 type RequestMessage struct {
+	Username  string
 	ChannelID uint64
 	Msg       isRequestMessageMsg
 }
@@ -64,6 +65,13 @@ type ConfRequestMessage struct {
 }
 
 func (*ConfRequestMessage) isRequestMessageMsg() {}
+
+func (m *RequestMessage) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
 
 func (m *RequestMessage) GetChannelID() uint64 {
 	if m != nil {

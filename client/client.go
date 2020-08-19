@@ -145,6 +145,7 @@ func (cli *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunicatio
 			case *UserRequestMessage:
 				userMsg := msg.GetUserMsg()
 				req := &pb.StreamRequest{
+					Username:  msg.Username,
 					ChannelId: msg.ChannelID,
 					Msg: &pb.StreamRequest_UserMsg{
 						UserMsg: &pb.StreamRequest_UserMessage{
@@ -160,6 +161,7 @@ func (cli *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunicatio
 			case *ConfRequestMessage:
 				confMsg := msg.GetConfMsg()
 				req := &pb.StreamRequest{
+					Username:  msg.Username,
 					ChannelId: msg.ChannelID,
 					Msg: &pb.StreamRequest_ConfMsg{
 						ConfMsg: &pb.StreamRequest_ConfMessage{
