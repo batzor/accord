@@ -12,17 +12,17 @@ func TestClientCreateUser(t *testing.T) {
 	t.Parallel()
 
 	serverID := uint64(12345)
-	serverAddr := "0.0.0.0:50051"
+	s := server.NewAccordServer()
+	serverAddr, err := s.Listen("localhost:0")
 	go func() {
-		s := server.NewAccordServer()
-		s.Start(serverAddr)
+		s.Start()
 		t.Log("Server stopped.")
 	}()
 
 	c := client.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
-	err := c.CreateUser("testuser1", "testpw1")
+	err = c.CreateUser("testuser1", "testpw1")
 	require.NoError(t, err)
 
 	err = c.Login("testuser1", "testpw1")
@@ -33,17 +33,17 @@ func TestClientLogin(t *testing.T) {
 	t.Parallel()
 
 	serverID := uint64(12345)
-	serverAddr := "0.0.0.0:50051"
+	s := server.NewAccordServer()
+	serverAddr, err := s.Listen("localhost:0")
 	go func() {
-		s := server.NewAccordServer()
-		s.Start(serverAddr)
+		s.Start()
 		t.Log("Server stopped.")
 	}()
 
 	c := client.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
-	err := c.CreateUser("testuser1", "testpw1")
+	err = c.CreateUser("testuser1", "testpw1")
 	require.NoError(t, err)
 
 	err = c.Login("testuser1", "testpw2")
@@ -54,4 +54,22 @@ func TestClientLogin(t *testing.T) {
 
 	err = c.Login("testuser1", "testpw1")
 	require.Nil(t, err)
+}
+
+func TestClientCreateChannel(t *testing.T) {
+	t.Parallel()
+
+	serverID := uint64(12345)
+	s := server.NewAccordServer()
+	serverAddr, err := s.Listen("localhost:0")
+	go func() {
+		s.Start()
+		t.Log("Server stopped.")
+	}()
+
+	c := client.NewAccordClient(serverID)
+	c.Connect(serverAddr)
+
+	err = c.CreateChannel("testchan1", true)
+	require.NoError(t, err)
 }

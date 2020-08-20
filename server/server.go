@@ -22,6 +22,7 @@ const (
 )
 
 type AccordServer struct {
+	listener   net.Listener
 	mutex      sync.RWMutex
 	users      map[string]*User
 	channels   map[uint64]*Channel
@@ -29,34 +30,21 @@ type AccordServer struct {
 }
 
 func NewAccordServer() *AccordServer {
-	// adding dummy data so far.
-	user1, _ := NewUser("baz", "baz123", "member")
-	user2, _ := NewUser("tmr", "tmr456", "member")
-	dummyUsersMap := map[string]*User{
-		"baz": user1,
-		"tmr": user2,
-	}
-	dummyUsersSlice := []User{*user1, *user2}
-	channels := map[uint64]*Channel{
-		01234: NewChannel(01234, dummyUsersSlice, false),
-		56789: NewChannel(56789, dummyUsersSlice, true),
-	}
 	return &AccordServer{
-		users:      dummyUsersMap, // ideally, has to be empty when server is initialized.
-		channels:   channels,
+		users:      map[string]*User{},
+		channels:   map[uint64]*Channel{},
 		jwtManager: auth.NewJWTManager(secretKey, tokenDuration),
 	}
 }
 
-func (s *AccordServer) PrepareChannels() {
-	for _, channel := range s.channels {
-		go channel.Listen()
-	}
+// Load channels from the persistent storage
+func (s *AccordServer) LoadChannels() error {
+	return fmt.Errorf("Unimplemented!")
 }
 
-func (s *AccordServer) AddNewChannel(ch Channel) {
-	s.channels[ch.channelID] = &ch
-	go ch.Listen()
+// Load channels from the persistent storage
+func (s *AccordServer) LoadUsers() error {
+	return fmt.Errorf("Unimplemented!")
 }
 
 func (s *AccordServer) GetUser(username string) *User {
@@ -71,6 +59,18 @@ func (s *AccordServer) GetUser(username string) *User {
 	return user.Clone()
 }
 
+func (s *AccordServer) CreateChannel(_ context.Context, req *pb.CreateChannelRequest) (*pb.CreateChannelResponse, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	ch := NewChannel(uint64(len(s.channels)), req.GetName(), req.GetIsPublic())
+	s.channels[ch.channelId] = ch
+	go ch.Listen()
+
+	res := &pb.CreateChannelResponse{}
+	log.Printf("New Channel %s created", req.GetName())
+	return res, nil
+}
+
 func (s *AccordServer) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	if s.users[req.GetUsername()] != nil {
 		return nil, status.Errorf(codes.AlreadyExists, "Username is already in use")
@@ -81,6 +81,7 @@ func (s *AccordServer) CreateUser(_ context.Context, req *pb.CreateUserRequest) 
 		return nil, status.Errorf(codes.InvalidArgument, "Password could not be hashed")
 	}
 
+	log.Printf("New user %s created", user.Username)
 	s.users[user.Username] = user
 
 	res := &pb.CreateUserResponse{}
@@ -128,7 +129,7 @@ func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsReque
 	}
 	for _, channel := range s.channels {
 		res.Channels = append(res.Channels, &pb.Channel{
-			Id:   channel.channelID,
+			Id:   channel.channelId,
 			Name: channel.name,
 		})
 	}
@@ -194,17 +195,21 @@ func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 	return nil
 }
 
-func (s *AccordServer) Start(serv_addr string) {
-	fmt.Println("Starting up!")
+func (s *AccordServer) Listen(serv_addr string) (string, error) {
 	listener, err := net.Listen("tcp", serv_addr)
 	if err != nil {
-		log.Fatalf("Failed to init listener: %v", err)
+		log.Print("Failed to init listener:", err)
+		return "", err
 	}
+	log.Print("Initialized listener:", listener.Addr().String())
 
-	s.PrepareChannels()
+	s.listener = listener
+	return s.listener.Addr().String(), nil
+}
 
+func (s *AccordServer) Start() {
 	srv := grpc.NewServer()
 	pb.RegisterChatServer(srv, s)
 
-	srv.Serve(listener)
+	srv.Serve(s.listener)
 }

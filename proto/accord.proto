@@ -32,6 +32,13 @@ message Channel {
     string name = 2;
 }
 
+message CreateChannelRequest {
+    string name = 1;
+    bool isPublic = 2;
+}
+
+message CreateChannelResponse {}
+
 message GetChannelsRequest {
     string username = 1;
     fixed64 server_id = 2;
@@ -95,6 +102,7 @@ service Chat {
     rpc Login(LoginRequest) returns (LoginResponse) {}
     rpc Logout(LogoutRequest) returns (LogoutResponse) {}
 
+    rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse) {}
     // Returns information about particular user's channels.
     rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
 
