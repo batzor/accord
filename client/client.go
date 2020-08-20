@@ -109,8 +109,9 @@ func (c *AccordClient) CreateUser(username string, password string) error {
 	return c.authClient.CreateUser(username, password)
 }
 
-func (cli *AccordClient) CreateChannel(name string, isPublic bool) error {
-	if cli.ChatClient == nil {
+// CreateChannel sends the request to create new channel.
+func (c *AccordClient) CreateChannel(name string, isPublic bool) error {
+	if c.ChatClient == nil {
 		return fmt.Errorf("Login required")
 	}
 	req := &pb.CreateChannelRequest{
@@ -122,7 +123,7 @@ func (cli *AccordClient) CreateChannel(name string, isPublic bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := cli.ChatClient.CreateChannel(ctx, req)
+	_, err := c.ChatClient.CreateChannel(ctx, req)
 	return err
 }
 
@@ -148,23 +149,23 @@ func (c *AccordClient) Login(username string, password string) error {
 	return nil
 }
 
-// GetChannelInfo adds all channel to client, related to the user.
-func (cli *AccordClient) GetChannelInfo() error {
+// GetChannels adds all channels related to the user to the client.
+func (c *AccordClient) GetChannels() error {
 	req := &pb.GetChannelsRequest{
-		Username: cli.Username,
-		ServerId: cli.ServerID,
+		Username: c.Username,
+		ServerId: c.ServerID,
 	}
 
 	log.Println("Getting information about user channels...")
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	res, err := cli.ChatClient.GetChannels(ctx, req)
+	res, err := c.ChatClient.GetChannels(ctx, req)
 	if err != nil {
 		return fmt.Errorf("Could not get the channel info: %v", err)
 	}
 	for _, resChannel := range res.GetChannels() {
-		cli.Channels = append(cli.Channels, Channel{
+		c.Channels = append(c.Channels, Channel{
 			ID:   resChannel.GetId(),
 			Name: resChannel.GetName(),
 		})
@@ -176,8 +177,8 @@ func (cli *AccordClient) GetChannelInfo() error {
 // to which messages can be pushed/received. In the structs, there are also channels for communicating
 // when the main request and response channels need to be closed.
 // "channelID" is only used to check that each request contains same channel ID.
-func (cli *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunication, *StreamResponseCommunication, error) {
-	chatClient, err := cli.ChatClient.Stream(context.Background())
+func (c *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunication, *StreamResponseCommunication, error) {
+	chatClient, err := c.ChatClient.Stream(context.Background())
 	if err != nil {
 		return nil, nil, fmt.Errorf("Stream RPC failed: %v", err)
 	}
