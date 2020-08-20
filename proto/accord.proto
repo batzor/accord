@@ -32,6 +32,13 @@ message Channel {
     string name = 2;
 }
 
+message CreateChannelRequest {
+    string name = 1;
+    bool isPublic = 2;
+}
+
+message CreateChannelResponse {}
+
 message GetChannelsRequest {
     string username = 1;
     fixed64 server_id = 2;

@@ -17,7 +17,7 @@ type Message struct {
 
 // Channel represents a single private or public messaging channel.
 type Channel struct {
-	channelID           uint64
+	channelId           uint64
 	name                string
 	messages            []Message
 	msgc                chan Message
@@ -29,13 +29,13 @@ type Channel struct {
 }
 
 // NewChannel creates a new channel with provided parameters.
-func NewChannel(uid uint64, users []User, isPublic bool) *Channel {
+func NewChannel(uid uint64, name string, isPublic bool) *Channel {
 	return &Channel{
-		channelID:           uid,
+		channelId:           uid,
+		name:                name,
 		messages:            []Message{},
 		msgc:                make(chan Message),
 		usersToStreams:      map[string]pb.Chat_StreamServer{},
-		users:               users,
 		pinnedMsg:           0,
 		isPublic:            isPublic,
 		rolesWithPermission: map[Permission][]string{},
@@ -74,5 +74,4 @@ func (ch *Channel) Broadcast(msg Message) {
 			}
 		}
 	}
-
 }
