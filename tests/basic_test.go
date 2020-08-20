@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"log"
 	"testing"
 
 	client "github.com/qvntm/Accord/client"
@@ -12,16 +13,17 @@ func TestClientCreateUser(t *testing.T) {
 	t.Parallel()
 
 	s := server.NewAccordServer()
-	addr, err := s.Start("0.0.0.0:0")
+	addr, err := s.Start("localhost:0")
+	log.Print(addr)
 	require.NoError(t, err)
 
 	c := client.NewAccordClient()
 	c.Connect(addr)
 
-	err = c.AuthClient().CreateUser("testuser1", "testpw1")
+	err = c.CreateUser("testuser1", "testpw1")
 	require.NoError(t, err)
 
-	_, err = c.AuthClient().Login("testuser1", "testpw1")
+	err = c.Login("testuser1", "testpw1")
 	require.NoError(t, err)
 }
 
@@ -29,20 +31,21 @@ func TestClientLogin(t *testing.T) {
 	t.Parallel()
 
 	s := server.NewAccordServer()
-	addr, err := s.Start("0.0.0.0:0")
+	addr, err := s.Start("localhost:0")
+	log.Print(addr)
 
 	c := client.NewAccordClient()
 	c.Connect(addr)
 
-	err = c.AuthClient().CreateUser("testuser1", "testpw1")
+	err = c.CreateUser("testuser1", "testpw1")
 	require.NoError(t, err)
 
-	_, err = c.AuthClient().Login("testuser1", "testpw2")
+	err = c.Login("testuser1", "testpw2")
 	require.NotNil(t, err)
 
-	_, err = c.AuthClient().Login("testuser2", "testpw1")
+	err = c.Login("testuser2", "testpw1")
 	require.NotNil(t, err)
 
-	_, err = c.AuthClient().Login("testuser1", "testpw1")
+	err = c.Login("testuser1", "testpw1")
 	require.Nil(t, err)
 }

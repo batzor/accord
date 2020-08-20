@@ -1,1 +1,1 @@
-subjectAltName=DNS:*.pcclient.com,IP:0.0.0.0
+subjectAltName=DNS:*.accordclient.com,IP:127.0.0.1

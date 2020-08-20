@@ -20,10 +20,14 @@ type AuthInterceptor struct {
 // NewAuthInterceptor returns a new auth interceptor
 func NewAuthInterceptor(
 	authClient *AuthClient,
+	username string,
+	password string,
 	refreshDuration time.Duration,
 ) (*AuthInterceptor, error) {
 	interceptor := &AuthInterceptor{
 		authClient: authClient,
+		username:   username,
+		password:   password,
 	}
 
 	err := interceptor.scheduleRefreshToken(refreshDuration)
