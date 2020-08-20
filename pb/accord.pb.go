@@ -1136,7 +1136,7 @@ var file_accord_proto_rawDesc = []byte{
 	0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x70, 0x6c,
 	0x61, 0x63, 0x65, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
 	0x0b, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x42, 0x07, 0x0a, 0x05,
-	0x65, 0x76, 0x65, 0x6e, 0x74, 0x32, 0xc9, 0x02, 0x0a, 0x04, 0x43, 0x68, 0x61, 0x74, 0x12, 0x45,
+	0x65, 0x76, 0x65, 0x6e, 0x74, 0x32, 0x99, 0x03, 0x0a, 0x04, 0x43, 0x68, 0x61, 0x74, 0x12, 0x45,
 	0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x12, 0x19, 0x2e, 0x41,
 	0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64,
@@ -1148,6 +1148,11 @@ var file_accord_proto_rawDesc = []byte{
 	0x06, 0x4c, 0x6f, 0x67, 0x6f, 0x75, 0x74, 0x12, 0x15, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64,
 	0x2e, 0x4c, 0x6f, 0x67, 0x6f, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16,
 	0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x4c, 0x6f, 0x67, 0x6f, 0x75, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x4e, 0x0a, 0x0d, 0x43, 0x72, 0x65, 0x61,
+	0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x1c, 0x2e, 0x41, 0x63, 0x63, 0x6f,
+	0x72, 0x64, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1d, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64,
+	0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65,
 	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x48, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x43,
 	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x12, 0x1a, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64,
 	0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x52, 0x65, 0x71, 0x75,
@@ -1209,15 +1214,17 @@ var file_accord_proto_depIdxs = []int32{
 	2,  // 8: Accord.Chat.CreateUser:input_type -> Accord.CreateUserRequest
 	4,  // 9: Accord.Chat.Login:input_type -> Accord.LoginRequest
 	6,  // 10: Accord.Chat.Logout:input_type -> Accord.LogoutRequest
-	11, // 11: Accord.Chat.GetChannels:input_type -> Accord.GetChannelsRequest
-	13, // 12: Accord.Chat.Stream:input_type -> Accord.StreamRequest
-	3,  // 13: Accord.Chat.CreateUser:output_type -> Accord.CreateUserResponse
-	5,  // 14: Accord.Chat.Login:output_type -> Accord.LoginResponse
-	7,  // 15: Accord.Chat.Logout:output_type -> Accord.LogoutResponse
-	12, // 16: Accord.Chat.GetChannels:output_type -> Accord.GetChannelsResponse
-	14, // 17: Accord.Chat.Stream:output_type -> Accord.StreamResponse
-	13, // [13:18] is the sub-list for method output_type
-	8,  // [8:13] is the sub-list for method input_type
+	9,  // 11: Accord.Chat.CreateChannel:input_type -> Accord.CreateChannelRequest
+	11, // 12: Accord.Chat.GetChannels:input_type -> Accord.GetChannelsRequest
+	13, // 13: Accord.Chat.Stream:input_type -> Accord.StreamRequest
+	3,  // 14: Accord.Chat.CreateUser:output_type -> Accord.CreateUserResponse
+	5,  // 15: Accord.Chat.Login:output_type -> Accord.LoginResponse
+	7,  // 16: Accord.Chat.Logout:output_type -> Accord.LogoutResponse
+	10, // 17: Accord.Chat.CreateChannel:output_type -> Accord.CreateChannelResponse
+	12, // 18: Accord.Chat.GetChannels:output_type -> Accord.GetChannelsResponse
+	14, // 19: Accord.Chat.Stream:output_type -> Accord.StreamResponse
+	14, // [14:20] is the sub-list for method output_type
+	8,  // [8:14] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
 	8,  // [8:8] is the sub-list for extension extendee
 	0,  // [0:8] is the sub-list for field type_name
@@ -1478,6 +1485,7 @@ type ChatClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+	CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error)
 	// Returns information about particular user's channels.
 	GetChannels(ctx context.Context, in *GetChannelsRequest, opts ...grpc.CallOption) (*GetChannelsResponse, error)
 	Stream(ctx context.Context, opts ...grpc.CallOption) (Chat_StreamClient, error)
@@ -1512,6 +1520,15 @@ func (c *chatClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.C
 func (c *chatClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error) {
 	out := new(LogoutResponse)
 	err := c.cc.Invoke(ctx, "/Accord.Chat/Logout", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error) {
+	out := new(CreateChannelResponse)
+	err := c.cc.Invoke(ctx, "/Accord.Chat/CreateChannel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1563,6 +1580,7 @@ type ChatServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
+	CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error)
 	// Returns information about particular user's channels.
 	GetChannels(context.Context, *GetChannelsRequest) (*GetChannelsResponse, error)
 	Stream(Chat_StreamServer) error
@@ -1580,6 +1598,9 @@ func (*UnimplementedChatServer) Login(context.Context, *LoginRequest) (*LoginRes
 }
 func (*UnimplementedChatServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
+func (*UnimplementedChatServer) CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateChannel not implemented")
 }
 func (*UnimplementedChatServer) GetChannels(context.Context, *GetChannelsRequest) (*GetChannelsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChannels not implemented")
@@ -1646,6 +1667,24 @@ func _Chat_Logout_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Chat_CreateChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).CreateChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Accord.Chat/CreateChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).CreateChannel(ctx, req.(*CreateChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Chat_GetChannels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetChannelsRequest)
 	if err := dec(in); err != nil {
@@ -1705,6 +1744,10 @@ var _Chat_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Logout",
 			Handler:    _Chat_Logout_Handler,
+		},
+		{
+			MethodName: "CreateChannel",
+			Handler:    _Chat_CreateChannel_Handler,
 		},
 		{
 			MethodName: "GetChannels",

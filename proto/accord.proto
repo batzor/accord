@@ -101,6 +101,7 @@ service Chat {
     rpc Login(LoginRequest) returns (LoginResponse) {}
     rpc Logout(LogoutRequest) returns (LogoutResponse) {}
 
+    rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse) {}
     // Returns information about particular user's channels.
     rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
 

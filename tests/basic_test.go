@@ -55,3 +55,21 @@ func TestClientLogin(t *testing.T) {
 	err = c.Login("testuser1", "testpw1")
 	require.Nil(t, err)
 }
+
+func TestClientCreateChannel(t *testing.T) {
+	t.Parallel()
+
+	serverID := uint64(12345)
+	s := server.NewAccordServer()
+	serverAddr, err := s.Listen("localhost:0")
+	go func() {
+		s.Start()
+		t.Log("Server stopped.")
+	}()
+
+	c := client.NewAccordClient(serverID)
+	c.Connect(serverAddr)
+
+	err = c.CreateChannel("testchan1", true)
+	require.NoError(t, err)
+}

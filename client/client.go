@@ -74,6 +74,20 @@ func (cli *AccordClient) CreateUser(username string, password string) error {
 	return err
 }
 
+func (cli *AccordClient) CreateChannel(name string, isPublic bool) error {
+	req := &pb.CreateChannelRequest{
+		Name:     name,
+		IsPublic: isPublic,
+	}
+
+	log.Print("Creating channel...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := cli.ChatClient.CreateChannel(ctx, req)
+	return err
+}
+
 func (cli *AccordClient) Login(username string, password string) error {
 	req := &pb.LoginRequest{
 		Username: username,
