@@ -2,15 +2,49 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"reflect"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	pb "github.com/qvntm/Accord/pb"
 )
+
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	// Load certificate of the CA who signed server's certificate
+	pemServerCA, err := ioutil.ReadFile("../cert/ca-cert.pem")
+	if err != nil {
+		return nil, err
+
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(pemServerCA) {
+		return nil, fmt.Errorf("failed to add server CA's certificate")
+
+	}
+
+	// Load client's certificate and private key
+	clientCert, err := tls.LoadX509KeyPair("../cert/client-cert.pem", "../cert/client-key.pem")
+	if err != nil {
+		return nil, err
+
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		Certificates: []tls.Certificate{clientCert},
+		RootCAs:      certPool,
+	}
+
+	return credentials.NewTLS(config), nil
+}
 
 type Channel struct {
 	ID   uint64
@@ -32,8 +66,10 @@ type StreamResponseCommunication struct {
 }
 
 type AccordClient struct {
+	authClient      *AuthClient
+	serverAddr      string
+	transportOption grpc.DialOption
 	pb.ChatClient
-	Token    string
 	Username string
 	ServerID uint64
 	Channels []Channel
@@ -41,40 +77,42 @@ type AccordClient struct {
 
 func NewAccordClient(serverID uint64) *AccordClient {
 	return &AccordClient{
-		Token:    "",
 		Username: "",
 		ServerID: serverID,
 	}
 }
 
-func (cli *AccordClient) Connect(conn_addr string) error {
-	// TODO: add KeepAliveParams like this: https://github.com/grpc/grpc-go/blob/master/examples/features/keepalive/client/main.go
-	conn, err := grpc.Dial(conn_addr, grpc.WithInsecure())
+func (c *AccordClient) AuthClient() *AuthClient {
+	return c.authClient
+}
+
+func (c *AccordClient) Connect(addr string) error {
+	tlsCredentials, err := loadTLSCredentials()
 	if err != nil {
-		log.Fatalf("Failed to connect to server: %v", err)
+		log.Fatal("cannot load TLS credentials:", err)
+	}
+	c.transportOption = grpc.WithTransportCredentials(tlsCredentials)
+
+	conn, err := grpc.Dial(addr, c.transportOption)
+	if err != nil {
+		log.Print("Failed to connect to server:", err)
 		return err
 	}
 
-	cli.ChatClient = pb.NewChatClient(conn)
+	c.authClient = NewAuthClient(conn)
+	c.serverAddr = addr
 	fmt.Println("Successfully started!")
 	return nil
 }
 
-func (cli *AccordClient) CreateUser(username string, password string) error {
-	req := &pb.CreateUserRequest{
-		Username: username,
-		Password: password,
-	}
-
-	log.Print("Creating user...")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	_, err := cli.ChatClient.CreateUser(ctx, req)
-	return err
+func (c *AccordClient) CreateUser(username string, password string) error {
+	return c.authClient.CreateUser(username, password)
 }
 
 func (cli *AccordClient) CreateChannel(name string, isPublic bool) error {
+	if cli.ChatClient == nil {
+		return fmt.Errorf("Login required")
+	}
 	req := &pb.CreateChannelRequest{
 		Name:     name,
 		IsPublic: isPublic,
@@ -88,32 +126,30 @@ func (cli *AccordClient) CreateChannel(name string, isPublic bool) error {
 	return err
 }
 
-func (cli *AccordClient) Login(username string, password string) error {
-	req := &pb.LoginRequest{
-		Username: username,
-		Password: password,
+func (c *AccordClient) Login(username string, password string) error {
+	interceptor, err := NewAuthInterceptor(c.authClient, username, password, 30*time.Second)
+	if err != nil {
+		log.Print("Could not authenticate: ", err)
+		return err
 	}
 
-	log.Print("Logging in...")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	res, err := cli.ChatClient.Login(ctx, req)
-	if err == nil {
-		log.Print("Acquired new token: ", cli.Token)
-		cli.Token = res.GetToken()
-		cli.Username = username
+	conn, err := grpc.Dial(
+		c.serverAddr,
+		c.transportOption,
+		grpc.WithUnaryInterceptor(interceptor.Unary()),
+		grpc.WithStreamInterceptor(interceptor.Stream()),
+	)
+	if err != nil {
+		log.Print("Cannot connect to server: ", err)
+		return err
 	}
 
-	return err
+	c.ChatClient = pb.NewChatClient(conn)
+	return nil
 }
 
 // GetChannelInfo adds all channel to client, related to the user.
 func (cli *AccordClient) GetChannelInfo() error {
-	if cli.Token == "" && cli.Username == "" {
-		return fmt.Errorf("not logged in, JWT token is not obtained or username was not provided")
-	}
-
 	req := &pb.GetChannelsRequest{
 		Username: cli.Username,
 		ServerId: cli.ServerID,

@@ -5,28 +5,6 @@ option go_package=".;pb";
 
 import "google/protobuf/timestamp.proto";
 
-message CreateUserRequest {
-    string password = 1;
-    string username = 2;
-}
-
-message CreateUserResponse {}
-
-message LoginRequest {
-    string password = 1;
-    string username = 2;
-}
-
-message LoginResponse {
-    string token = 1;
-}
-
-message LogoutRequest {
-    string token = 1;
-}
-
-message LogoutResponse {}
-
 message Channel {
     fixed64 id = 1;
     string name = 2;
@@ -97,14 +75,10 @@ message StreamResponse {
 }
 
 service Chat {
-    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
-    rpc Login(LoginRequest) returns (LoginResponse) {}
-    rpc Logout(LogoutRequest) returns (LogoutResponse) {}
-
     rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse) {}
+
     // Returns information about particular user's channels.
     rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
-
 
     rpc Stream(stream StreamRequest) returns (stream StreamResponse) {}
 }
