@@ -53,10 +53,10 @@ func (s *AuthServer) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, "Password could not be hashed")
 	}
 
-	s.users[user.Username] = user
+	s.users[user.username] = user
 
 	res := &pb.CreateUserResponse{}
-	log.Printf("New user %s created", user.Username)
+	log.Printf("New user %s created", user.username)
 	return res, nil
 }
 
@@ -70,14 +70,14 @@ func (s *AuthServer) Login(_ context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		return nil, status.Errorf(codes.InvalidArgument, "Incorrect password.")
 	}
 
-	token, err := s.jwtManager.Generate(user.Username, user.Role)
+	token, err := s.jwtManager.Generate(user.username, user.role)
 	if err != nil {
 		log.Print("token generation failed!")
 		return nil, status.Errorf(codes.Internal, "Cannot generate access token")
 	}
 
 	res := &pb.LoginResponse{AccessToken: token}
-	log.Printf("%s acquired new token", user.Username)
+	log.Printf("%s acquired new token", user.username)
 	return res, nil
 }
 
