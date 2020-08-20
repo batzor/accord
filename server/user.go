@@ -8,9 +8,9 @@ import (
 
 // User contains user's information
 type User struct {
-	Username       string
-	HashedPassword string
-	Role           string
+	username       string
+	hashedPassword string
+	role           string
 }
 
 // NewUser returns a new user
@@ -21,9 +21,9 @@ func NewUser(username string, password string, role string) (*User, error) {
 	}
 
 	user := &User{
-		Username:       username,
-		HashedPassword: string(hashedPassword),
-		Role:           role,
+		username:       username,
+		hashedPassword: string(hashedPassword),
+		role:           role,
 	}
 
 	return user, nil
@@ -31,15 +31,15 @@ func NewUser(username string, password string, role string) (*User, error) {
 
 // IsCorrectPassword checks if the provided password is correct or not
 func (user *User) IsCorrectPassword(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.hashedPassword), []byte(password))
 	return err == nil
 }
 
 // Clone returns a clone of this user
 func (user *User) Clone() *User {
 	return &User{
-		Username:       user.Username,
-		HashedPassword: user.HashedPassword,
-		Role:           user.Role,
+		username:       user.username,
+		hashedPassword: user.hashedPassword,
+		role:           user.role,
 	}
 }

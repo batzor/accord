@@ -70,7 +70,7 @@ func (ch *Channel) Broadcast(msg Message) {
 				Event:     newMessage,
 			}
 			if err := stream.Send(response); err != nil {
-				log.Printf("Could not send message to %s in channel %v\n", user.Username, *ch)
+				log.Printf("Could not send message to %s in channel %v\n", user.username, *ch)
 			}
 		}
 	}
