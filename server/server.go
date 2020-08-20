@@ -1,15 +1,19 @@
 package server
 
 import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"sync"
 	"time"
 
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 
 	auth "github.com/qvntm/Accord/auth"
@@ -21,19 +25,50 @@ const (
 	tokenDuration = 15 * time.Minute
 )
 
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	// Load certificate of the CA who signed server's certificate
+	pemServerCA, err := ioutil.ReadFile("../cert/ca-cert.pem")
+	if err != nil {
+		return nil, err
+	}
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(pemServerCA) {
+		return nil, fmt.Errorf("failed to add server CA's certificate")
+	}
+
+	// Load client's certificate and private key
+	clientCert, err := tls.LoadX509KeyPair("../cert/server-cert.pem", "../cert/server-key.pem")
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		Certificates: []tls.Certificate{clientCert},
+		RootCAs:      certPool,
+	}
+
+	return credentials.NewTLS(config), nil
+}
+
 type AccordServer struct {
-	listener   net.Listener
-	mutex      sync.RWMutex
-	users      map[string]*User
-	channels   map[uint64]*Channel
-	jwtManager *auth.JWTManager
+	authServer      *AuthServer
+	authInterceptor *AuthInterceptor
+	listener        net.Listener
+	mutex           sync.RWMutex
+	users           map[string]*User
+	channels        map[uint64]*Channel
+	jwtManager      *auth.JWTManager
 }
 
 func NewAccordServer() *AccordServer {
+	authServer := NewAuthServer()
 	return &AccordServer{
-		users:      map[string]*User{},
-		channels:   map[uint64]*Channel{},
-		jwtManager: auth.NewJWTManager(secretKey, tokenDuration),
+		authServer:      authServer,
+		authInterceptor: NewAuthInterceptor(authServer.JWTManager()),
+		users:           map[string]*User{},
+		channels:        map[uint64]*Channel{},
+		jwtManager:      auth.NewJWTManager(secretKey, tokenDuration),
 	}
 }
 
@@ -47,18 +82,6 @@ func (s *AccordServer) LoadUsers() error {
 	return fmt.Errorf("Unimplemented!")
 }
 
-func (s *AccordServer) GetUser(username string) *User {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
-
-	user := s.users[username]
-	if user == nil {
-		return nil
-	}
-
-	return user.Clone()
-}
-
 func (s *AccordServer) CreateChannel(_ context.Context, req *pb.CreateChannelRequest) (*pb.CreateChannelResponse, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
@@ -69,49 +92,6 @@ func (s *AccordServer) CreateChannel(_ context.Context, req *pb.CreateChannelReq
 	res := &pb.CreateChannelResponse{}
 	log.Printf("New Channel %s created", req.GetName())
 	return res, nil
-}
-
-func (s *AccordServer) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	if s.users[req.GetUsername()] != nil {
-		return nil, status.Errorf(codes.AlreadyExists, "Username is already in use")
-	}
-
-	user, err := NewUser(req.GetUsername(), req.GetPassword(), "")
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "Password could not be hashed")
-	}
-
-	log.Printf("New user %s created", user.username)
-	s.users[user.username] = user
-
-	res := &pb.CreateUserResponse{}
-	log.Printf("New user %s created", user.username)
-	return res, nil
-}
-
-func (s *AccordServer) Login(_ context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	user := s.GetUser(req.GetUsername())
-
-	if user == nil {
-		return nil, status.Errorf(codes.NotFound, "Username not found.")
-	}
-	if !user.IsCorrectPassword(req.GetPassword()) {
-		return nil, status.Errorf(codes.InvalidArgument, "Incorrect password.")
-	}
-
-	token, err := s.jwtManager.Generate(user.username, user.role)
-	if err != nil {
-		log.Print("token generation failed!")
-		return nil, status.Errorf(codes.Internal, "Cannot generate access token")
-	}
-
-	res := &pb.LoginResponse{Token: token}
-	log.Printf("%s acquired new token", user.username)
-	return res, nil
-}
-
-func (s *AccordServer) Logout(_ context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "Unimplemented!")
 }
 
 func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsRequest) (*pb.GetChannelsResponse, error) {
@@ -208,7 +188,19 @@ func (s *AccordServer) Listen(serv_addr string) (string, error) {
 }
 
 func (s *AccordServer) Start() {
-	srv := grpc.NewServer()
+	tlsCredentials, err := loadTLSCredentials()
+	if err != nil {
+		log.Fatal("Cannot load TLS credentials:", err)
+	}
+	serverOptions := []grpc.ServerOption{
+		grpc.UnaryInterceptor(s.authInterceptor.Unary()),
+		grpc.StreamInterceptor(s.authInterceptor.Stream()),
+	}
+
+	serverOptions = append(serverOptions, grpc.Creds(tlsCredentials))
+
+	srv := grpc.NewServer(serverOptions...)
+	pb.RegisterAuthServiceServer(srv, s.authServer)
 	pb.RegisterChatServer(srv, s)
 
 	srv.Serve(s.listener)

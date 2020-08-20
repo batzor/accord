@@ -71,5 +71,14 @@ func TestClientCreateChannel(t *testing.T) {
 	c.Connect(serverAddr)
 
 	err = c.CreateChannel("testchan1", true)
+	require.NotNil(t, err)
+
+	err = c.CreateUser("testuser1", "testpw1")
+	require.NoError(t, err)
+
+	err = c.Login("testuser1", "testpw1")
+	require.NoError(t, err)
+
+	err = c.CreateChannel("testchan1", true)
 	require.NoError(t, err)
 }

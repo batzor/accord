@@ -4,4 +4,9 @@ gen:
 test:
 	go test tests/basic_test.go
 
+cert:
+	cd cert; ./gen.sh; cd ..
+
+.PHONY: cert
+
 
