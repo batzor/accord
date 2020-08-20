@@ -63,7 +63,7 @@ func (s *AccordServer) CreateChannel(_ context.Context, req *pb.CreateChannelReq
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	ch := NewChannel(uint64(len(s.channels)), req.GetName(), req.GetIsPublic())
-	s.channels[ch.channelId] = ch
+	s.channels[ch.channelID] = ch
 	go ch.Listen()
 
 	res := &pb.CreateChannelResponse{}
@@ -129,7 +129,7 @@ func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsReque
 	}
 	for _, channel := range s.channels {
 		res.Channels = append(res.Channels, &pb.Channel{
-			Id:   channel.channelId,
+			Id:   channel.channelID,
 			Name: channel.name,
 		})
 	}
