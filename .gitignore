@@ -1,2 +1,3 @@
 # generated cert files
 *.pem
+*.srl
