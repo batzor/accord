@@ -27,11 +27,12 @@ message GetChannelsResponse {
 }
 
 message StreamRequest {
-    fixed64 channel_id = 1;
+    string username = 1;
+    fixed64 channel_id = 2;
     
     oneof msg {
-        UserMessage user_msg = 2;
-        ConfMessage conf_msg = 3;
+        UserMessage user_msg = 3;
+        ConfMessage conf_msg = 4;
     }
 
     enum UserMsgType {

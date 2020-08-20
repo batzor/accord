@@ -380,7 +380,8 @@ type StreamRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ChannelId uint64 `protobuf:"fixed64,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	Username  string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	ChannelId uint64 `protobuf:"fixed64,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	// Types that are assignable to Msg:
 	//	*StreamRequest_UserMsg
 	//	*StreamRequest_ConfMsg
@@ -419,6 +420,13 @@ func (*StreamRequest) Descriptor() ([]byte, []int) {
 	return file_accord_proto_rawDescGZIP(), []int{5}
 }
 
+func (x *StreamRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
 func (x *StreamRequest) GetChannelId() uint64 {
 	if x != nil {
 		return x.ChannelId
@@ -452,11 +460,11 @@ type isStreamRequest_Msg interface {
 }
 
 type StreamRequest_UserMsg struct {
-	UserMsg *StreamRequest_UserMessage `protobuf:"bytes,2,opt,name=user_msg,json=userMsg,proto3,oneof"`
+	UserMsg *StreamRequest_UserMessage `protobuf:"bytes,3,opt,name=user_msg,json=userMsg,proto3,oneof"`
 }
 
 type StreamRequest_ConfMsg struct {
-	ConfMsg *StreamRequest_ConfMessage `protobuf:"bytes,3,opt,name=conf_msg,json=confMsg,proto3,oneof"`
+	ConfMsg *StreamRequest_ConfMessage `protobuf:"bytes,4,opt,name=conf_msg,json=confMsg,proto3,oneof"`
 }
 
 func (*StreamRequest_UserMsg) isStreamRequest_Msg() {}

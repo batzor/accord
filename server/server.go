@@ -86,7 +86,7 @@ func (s *AccordServer) CreateChannel(_ context.Context, req *pb.CreateChannelReq
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	ch := NewChannel(uint64(len(s.channels)), req.GetName(), req.GetIsPublic())
-	s.channels[ch.channelId] = ch
+	s.channels[ch.channelID] = ch
 	go ch.Listen()
 
 	res := &pb.CreateChannelResponse{}
@@ -109,7 +109,7 @@ func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsReque
 	}
 	for _, channel := range s.channels {
 		res.Channels = append(res.Channels, &pb.Channel{
-			Id:   channel.channelId,
+			Id:   channel.channelID,
 			Name: channel.name,
 		})
 	}
@@ -118,7 +118,7 @@ func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsReque
 
 func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 	var channel *Channel = nil
-	var username string
+	var username string = ""
 	ctx := srv.Context()
 
 	for {
@@ -127,13 +127,20 @@ func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 			log.Fatalf("Error while reading client stream: %v", err)
 		}
 
+		if username == "" {
+			username = req.GetUsername()
+		} else if n := req.GetUsername(); username != n {
+			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent usernames\nhave:%s\nwant:%s\n", n, username)
+		}
+
 		if channel == nil {
 			channel = s.channels[req.GetChannelId()]
-			if channel != nil {
+			if channel == nil {
 				return status.Errorf(codes.InvalidArgument, "invalid channel ID: %v", err)
 			}
-			username = "tmr" // TODO: decide how to get username from connection
 			channel.usersToStreams[username] = srv
+		} else if id := req.GetChannelId(); channel.channelID != id {
+			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent channel IDs\nhave:%d\nwant:%d\n", id, channel.channelID)
 		}
 
 		var channelMessage *Message = nil
