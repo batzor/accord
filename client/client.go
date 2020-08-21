@@ -188,46 +188,18 @@ func (c *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunication,
 		defer close(closereqc)
 		for {
 			msg := <-reqc
-			if msg.ChannelID != channelID {
-				log.Printf("Inconsistent channel id used in channel: %v. Ignoring it.\n", reqc)
+			if msg.Username != c.Username {
+				log.Printf("Inconsistent usernames in channel: %v\nHave:%s\nWant:%s\n", reqc, msg.Username, c.Username)
 				continue
 			}
-			switch msg.GetMsg().(type) {
-			case *UserRequestMessage:
-				userMsg := msg.GetUserMsg()
-				req := &pb.StreamRequest{
-					Username:  msg.Username,
-					ChannelId: msg.ChannelID,
-					Msg: &pb.StreamRequest_UserMsg{
-						UserMsg: &pb.StreamRequest_UserMessage{
-							Type:    UserRequestToPBMessages[userMsg.MsgType],
-							Content: userMsg.Content,
-						},
-					},
-				}
-				if err := chatClient.Send(req); err != nil {
-					log.Printf("Terminating client stream's send goroutine: %v\n", err)
-					return
-				}
-			case *ConfRequestMessage:
-				confMsg := msg.GetConfMsg()
-				req := &pb.StreamRequest{
-					Username:  msg.Username,
-					ChannelId: msg.ChannelID,
-					Msg: &pb.StreamRequest_ConfMsg{
-						ConfMsg: &pb.StreamRequest_ConfMessage{
-							Type:        ConfRequestToPBMessages[confMsg.MsgType],
-							Placeholder: confMsg.Placeholder,
-						},
-					},
-				}
-				if err := chatClient.Send(req); err != nil {
-					log.Printf("Terminating client stream's send goroutine: %v\n", err)
-					return
-				}
-			default:
-				log.Printf("Invalid message type was passed: %v. Ignoring it.\n", reflect.TypeOf(msg.GetMsg()))
+			if msg.ChannelID != channelID {
+				log.Printf("Inconsistent channel id used in channel: %v\nHave:%d\nWant:%d\n", reqc, msg.ChannelID, channelID)
 				continue
+			}
+			req, _ := msg.getStreamRequest()
+			if err := chatClient.Send(req); err != nil {
+				log.Printf("Terminating client stream's send goroutine: %v\n", err)
+				return
 			}
 		}
 	}()

@@ -1,6 +1,8 @@
 package client
 
 import (
+	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/qvntm/Accord/pb"
@@ -26,26 +28,116 @@ type isRequestMessageMsg interface {
 	isRequestMessageMsg()
 }
 
-type UserRequestMessageType int
-
-const (
-	SendUserRequestMessageType UserRequestMessageType = iota
-	EditUserRequestMessageType
-	DeleteUserRequestMessageType
-)
-
-var UserRequestToPBMessages = map[UserRequestMessageType]pb.StreamRequest_UserMsgType{
-	SendUserRequestMessageType:   pb.StreamRequest_SEND_MSG,
-	EditUserRequestMessageType:   pb.StreamRequest_EDIT_MSG,
-	DeleteUserRequestMessageType: pb.StreamRequest_DELETE_MSG,
+// UserRequestMessage is a stream message sent by one of the users to the channel.
+type UserRequestMessage struct {
+	UserMsg isUserRequestMessageUserMsg
 }
 
-type UserRequestMessage struct {
-	MsgType UserRequestMessageType
-	Content string
+type isUserRequestMessageUserMsg interface {
+	isUserRequestMessageUserMsg()
 }
 
 func (*UserRequestMessage) isRequestMessageMsg() {}
+
+type NewUserRequestMessage struct {
+	Content string
+}
+
+func (*NewUserRequestMessage) isUserRequestMessageUserMsg() {}
+
+func (m *NewUserRequestMessage) getStreamRequestUserMessageNewUserMsg() *pb.StreamRequest_UserMessage_NewUserMsg {
+	return &pb.StreamRequest_UserMessage_NewUserMsg{
+		NewUserMsg: &pb.StreamRequest_UserMessage_NewUserMessage{
+			Content: m.Content,
+		},
+	}
+}
+
+type EditUserRequestMessage struct {
+	MessageID uint64
+	Content   string
+}
+
+func (*EditUserRequestMessage) isUserRequestMessageUserMsg() {}
+
+func (m *EditUserRequestMessage) getStreamRequestUserMessageEditUserMsg() *pb.StreamRequest_UserMessage_EditUserMsg {
+	return &pb.StreamRequest_UserMessage_EditUserMsg{
+		EditUserMsg: &pb.StreamRequest_UserMessage_EditUserMessage{
+			MessageId: m.MessageID,
+			Content:   m.Content,
+		},
+	}
+}
+
+type DeleteUserRequestMessage struct {
+	MessageID uint64
+}
+
+func (*DeleteUserRequestMessage) isUserRequestMessageUserMsg() {}
+
+func (m *DeleteUserRequestMessage) getStreamRequestUserMessageDeleteUserMsg() *pb.StreamRequest_UserMessage_DeleteUserMsg {
+	return &pb.StreamRequest_UserMessage_DeleteUserMsg{
+		DeleteUserMsg: &pb.StreamRequest_UserMessage_DeleteUserMessage{
+			MessageId: m.MessageID,
+		},
+	}
+}
+
+// GetUserMsg returns a user messega carried by m.
+func (m *UserRequestMessage) GetUserMsg() isUserRequestMessageUserMsg {
+	if m != nil {
+		return m.UserMsg
+	}
+	return nil
+}
+
+// getStreamRequestUserMsg turns user request message to the similar message declared
+// by pb.go file from "pb" package.
+func (m *UserRequestMessage) getStreamRequestUserMsg() *pb.StreamRequest_UserMsg {
+	var userMsg *pb.StreamRequest_UserMsg
+	switch m.GetUserMsg().(type) {
+	case *NewUserRequestMessage:
+		userMsg = &pb.StreamRequest_UserMsg{
+			UserMsg: &pb.StreamRequest_UserMessage{
+				UserMsg: m.GetNewUserMsg().getStreamRequestUserMessageNewUserMsg(),
+			},
+		}
+	case *EditUserRequestMessage:
+		userMsg = &pb.StreamRequest_UserMsg{
+			UserMsg: &pb.StreamRequest_UserMessage{
+				UserMsg: m.GetEditUserMsg().getStreamRequestUserMessageEditUserMsg(),
+			},
+		}
+	case *DeleteUserRequestMessage:
+		userMsg = &pb.StreamRequest_UserMsg{
+			UserMsg: &pb.StreamRequest_UserMessage{
+				UserMsg: m.GetDeleteUserMsg().getStreamRequestUserMessageDeleteUserMsg(),
+			},
+		}
+	}
+	return userMsg
+}
+
+func (m *UserRequestMessage) GetNewUserMsg() *NewUserRequestMessage {
+	if x, ok := m.GetUserMsg().(*NewUserRequestMessage); ok {
+		return x
+	}
+	return nil
+}
+
+func (m *UserRequestMessage) GetEditUserMsg() *EditUserRequestMessage {
+	if x, ok := m.GetUserMsg().(*EditUserRequestMessage); ok {
+		return x
+	}
+	return nil
+}
+
+func (m *UserRequestMessage) GetDeleteUserMsg() *DeleteUserRequestMessage {
+	if x, ok := m.GetUserMsg().(*DeleteUserRequestMessage); ok {
+		return x
+	}
+	return nil
+}
 
 type ConfRequestMessageType int
 
@@ -99,6 +191,24 @@ func (x *RequestMessage) GetConfMsg() *ConfRequestMessage {
 		return x
 	}
 	return nil
+}
+
+func (m *RequestMessage) getStreamRequest() (*pb.StreamRequest, error) {
+	switch m.GetMsg().(type) {
+	case *UserRequestMessage:
+		return &pb.StreamRequest{
+			Username:  m.Username,
+			ChannelId: m.ChannelID,
+			Msg:       m.GetUserMsg().getStreamRequestUserMsg(),
+		}, nil
+	case *ConfRequestMessage:
+		return &pb.StreamRequest{
+			Username:  m.Username,
+			ChannelId: m.ChannelID,
+			Msg:       nil, // TODO: implement this.
+		}, nil
+	}
+	return nil, fmt.Errorf("invalid message type was passed: %v", reflect.TypeOf(m.GetMsg()))
 }
 
 // ResponseMessageType is a type of a stream response message.
