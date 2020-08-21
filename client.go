@@ -1,55 +1,16 @@
-package client
+package accord
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"reflect"
 	"time"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 
-	pb "github.com/qvntm/Accord/pb"
+	pb "github.com/qvntm/accord/pb"
 )
-
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
-	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := ioutil.ReadFile("../cert/ca-cert.pem")
-	if err != nil {
-		return nil, err
-
-	}
-
-	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(pemServerCA) {
-		return nil, fmt.Errorf("failed to add server CA's certificate")
-
-	}
-
-	// Load client's certificate and private key
-	clientCert, err := tls.LoadX509KeyPair("../cert/client-cert.pem", "../cert/client-key.pem")
-	if err != nil {
-		return nil, err
-
-	}
-
-	// Create the credentials and return it
-	config := &tls.Config{
-		Certificates: []tls.Certificate{clientCert},
-		RootCAs:      certPool,
-	}
-
-	return credentials.NewTLS(config), nil
-}
-
-type Channel struct {
-	ID   uint64
-	Name string
-}
 
 // StreamRequestCommunication is used as a communication interface for users
 //  of this package who use "Stream" function.
@@ -128,7 +89,7 @@ func (c *AccordClient) CreateChannel(name string, isPublic bool) error {
 }
 
 func (c *AccordClient) Login(username string, password string) error {
-	interceptor, err := NewAuthInterceptor(c.authClient, username, password, 30*time.Second)
+	interceptor, err := NewClientAuthInterceptor(c.authClient, username, password, 30*time.Second)
 	if err != nil {
 		log.Print("Could not authenticate: ", err)
 		return err
@@ -164,10 +125,9 @@ func (c *AccordClient) GetChannels() error {
 	if err != nil {
 		return fmt.Errorf("Could not get the channel info: %v", err)
 	}
-	for _, resChannel := range res.GetChannels() {
+	for range res.GetChannels() {
 		c.Channels = append(c.Channels, Channel{
-			ID:   resChannel.GetId(),
-			Name: resChannel.GetName(),
+			// TODO: fill this out.
 		})
 	}
 	return nil

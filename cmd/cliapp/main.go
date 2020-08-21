@@ -1,6 +1,6 @@
 package main
 
-import "github.com/qvntm/Accord/cliapp"
+import "github.com/qvntm/accord/cliapp"
 
 func main() {
 	cliapp.Start()

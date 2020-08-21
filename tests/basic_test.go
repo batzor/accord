@@ -3,8 +3,7 @@ package tests
 import (
 	"testing"
 
-	client "github.com/qvntm/Accord/client"
-	server "github.com/qvntm/Accord/server"
+	"github.com/qvntm/accord"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,14 +11,14 @@ func TestClientCreateUser(t *testing.T) {
 	t.Parallel()
 
 	serverID := uint64(12345)
-	s := server.NewAccordServer()
+	s := accord.NewAccordServer()
 	serverAddr, err := s.Listen("localhost:0")
 	go func() {
 		s.Start()
 		t.Log("Server stopped.")
 	}()
 
-	c := client.NewAccordClient(serverID)
+	c := accord.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
 	err = c.CreateUser("testuser1", "testpw1")
@@ -33,14 +32,14 @@ func TestClientLogin(t *testing.T) {
 	t.Parallel()
 
 	serverID := uint64(12345)
-	s := server.NewAccordServer()
+	s := accord.NewAccordServer()
 	serverAddr, err := s.Listen("localhost:0")
 	go func() {
 		s.Start()
 		t.Log("Server stopped.")
 	}()
 
-	c := client.NewAccordClient(serverID)
+	c := accord.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
 	err = c.CreateUser("testuser1", "testpw1")
@@ -60,14 +59,14 @@ func TestClientCreateChannel(t *testing.T) {
 	t.Parallel()
 
 	serverID := uint64(12345)
-	s := server.NewAccordServer()
+	s := accord.NewAccordServer()
 	serverAddr, err := s.Listen("localhost:0")
 	go func() {
 		s.Start()
 		t.Log("Server stopped.")
 	}()
 
-	c := client.NewAccordClient(serverID)
+	c := accord.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
 	err = c.CreateChannel("testchan1", true)

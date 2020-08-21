@@ -1,11 +1,8 @@
-package server
+package accord
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"sync"
@@ -13,11 +10,9 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 
-	auth "github.com/qvntm/Accord/auth"
-	pb "github.com/qvntm/Accord/pb"
+	pb "github.com/qvntm/accord/pb"
 )
 
 const (
@@ -25,50 +20,24 @@ const (
 	tokenDuration = 15 * time.Minute
 )
 
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
-	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := ioutil.ReadFile("../cert/ca-cert.pem")
-	if err != nil {
-		return nil, err
-	}
-	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(pemServerCA) {
-		return nil, fmt.Errorf("failed to add server CA's certificate")
-	}
-
-	// Load client's certificate and private key
-	clientCert, err := tls.LoadX509KeyPair("../cert/server-cert.pem", "../cert/server-key.pem")
-	if err != nil {
-		return nil, err
-	}
-
-	// Create the credentials and return it
-	config := &tls.Config{
-		Certificates: []tls.Certificate{clientCert},
-		RootCAs:      certPool,
-	}
-
-	return credentials.NewTLS(config), nil
-}
-
 type AccordServer struct {
 	authServer      *AuthServer
-	authInterceptor *AuthInterceptor
+	authInterceptor *ServerAuthInterceptor
 	listener        net.Listener
 	mutex           sync.RWMutex
 	users           map[string]*User
 	channels        map[uint64]*Channel
-	jwtManager      *auth.JWTManager
+	jwtManager      *JWTManager
 }
 
 func NewAccordServer() *AccordServer {
 	authServer := NewAuthServer()
 	return &AccordServer{
 		authServer:      authServer,
-		authInterceptor: NewAuthInterceptor(authServer.JWTManager()),
+		authInterceptor: NewServerAuthInterceptor(authServer.JWTManager()),
 		users:           map[string]*User{},
 		channels:        map[uint64]*Channel{},
-		jwtManager:      auth.NewJWTManager(secretKey, tokenDuration),
+		jwtManager:      NewJWTManager(secretKey, tokenDuration),
 	}
 }
 
@@ -143,18 +112,13 @@ func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent channel IDs\nhave:%d\nwant:%d\n", id, channel.channelID)
 		}
 
-		var channelMessage *Message = nil
+		var channelMessage *RequestMessage = nil
 
 		// verify StreamRequest contains a valid message type
 		switch req.GetMsg().(type) {
 		case *pb.StreamRequest_UserMsg:
-			// TODO: distinguish between WRITE/MODIFY/DELETE messages.
-			//msg := req.GetUserMsg()
-			channelMessage = &Message{
-				timestamp: time.Now(),
-				from:      username,
-				content:   "", // TODO: implement the message.go properly and update this.
-			}
+			// TODO: implement the message.go properly and update this.
+			channelMessage = &RequestMessage{}
 		case *pb.StreamRequest_ConfMsg:
 			// TODO: Implement configuration message changes.
 			return status.Errorf(codes.Unimplemented, "configuration message handling is not implemented")

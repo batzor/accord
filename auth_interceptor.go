@@ -11,22 +11,22 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// AuthInterceptorServer is a server interceptor for authentication and authorization
-type AuthInterceptorServer struct {
+// ServerAuthInterceptor is a server interceptor for authentication and authorization
+type ServerAuthInterceptor struct {
 	allowedRoles map[string][]string
 	jwtManager   *JWTManager
 }
 
-// NewAuthInterceptorServer returns a new auth interceptor
-func NewAuthInterceptorServer(jwtManager *JWTManager) *AuthInterceptorServer {
-	return &AuthInterceptorServer{
+// NewServerAuthInterceptor returns a new auth interceptor
+func NewServerAuthInterceptor(jwtManager *JWTManager) *ServerAuthInterceptor {
+	return &ServerAuthInterceptor{
 		allowedRoles: make(map[string][]string),
 		jwtManager:   jwtManager,
 	}
 }
 
 // Unary returns a server interceptor function to authenticate and authorize unary RPC
-func (interceptor *AuthInterceptorServer) Unary() grpc.UnaryServerInterceptor {
+func (interceptor *ServerAuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req interface{},
@@ -45,7 +45,7 @@ func (interceptor *AuthInterceptorServer) Unary() grpc.UnaryServerInterceptor {
 }
 
 // Stream returns a server interceptor function to authenticate and authorize stream RPC
-func (interceptor *AuthInterceptorServer) Stream() grpc.StreamServerInterceptor {
+func (interceptor *ServerAuthInterceptor) Stream() grpc.StreamServerInterceptor {
 	return func(
 		srv interface{},
 		stream grpc.ServerStream,
@@ -63,7 +63,7 @@ func (interceptor *AuthInterceptorServer) Stream() grpc.StreamServerInterceptor 
 	}
 }
 
-func (interceptor *AuthInterceptorServer) Authorize(ctx context.Context, method string) error {
+func (interceptor *ServerAuthInterceptor) Authorize(ctx context.Context, method string) error {
 	allowedRoles, ok := interceptor.allowedRoles[method]
 	if !ok {
 		// everyone can access
@@ -95,22 +95,22 @@ func (interceptor *AuthInterceptorServer) Authorize(ctx context.Context, method 
 	return status.Error(codes.PermissionDenied, "no permission to access this RPC")
 }
 
-// AuthInterceptorClient is a client interceptor for authentication
-type AuthInterceptorClient struct {
+// ClientAuthInterceptor is a client interceptor for authentication
+type ClientAuthInterceptor struct {
 	authClient  *AuthClient
 	username    string
 	password    string
 	accessToken string
 }
 
-// NewAuthInterceptorClient returns a new auth interceptor
-func NewAuthInterceptorClient(
+// NewClientAuthInterceptor returns a new auth interceptor
+func NewClientAuthInterceptor(
 	authClient *AuthClient,
 	username string,
 	password string,
 	refreshDuration time.Duration,
-) (*AuthInterceptorClient, error) {
-	interceptor := &AuthInterceptorClient{
+) (*ClientAuthInterceptor, error) {
+	interceptor := &ClientAuthInterceptor{
 		authClient: authClient,
 		username:   username,
 		password:   password,
@@ -125,7 +125,7 @@ func NewAuthInterceptorClient(
 }
 
 // Unary returns a client interceptor to authenticate unary RPC
-func (intr *AuthInterceptorClient) Unary() grpc.UnaryClientInterceptor {
+func (intr *ClientAuthInterceptor) Unary() grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -141,7 +141,7 @@ func (intr *AuthInterceptorClient) Unary() grpc.UnaryClientInterceptor {
 }
 
 // Stream returns a client interceptor to authenticate stream RPC
-func (intr *AuthInterceptorClient) Stream() grpc.StreamClientInterceptor {
+func (intr *ClientAuthInterceptor) Stream() grpc.StreamClientInterceptor {
 	return func(
 		ctx context.Context,
 		desc *grpc.StreamDesc,
@@ -156,11 +156,11 @@ func (intr *AuthInterceptorClient) Stream() grpc.StreamClientInterceptor {
 	}
 }
 
-func (intr *AuthInterceptorClient) attachToken(ctx context.Context) context.Context {
+func (intr *ClientAuthInterceptor) attachToken(ctx context.Context) context.Context {
 	return metadata.AppendToOutgoingContext(ctx, "authorization", intr.accessToken)
 }
 
-func (intr *AuthInterceptorClient) scheduleRefreshToken(refreshDuration time.Duration) error {
+func (intr *ClientAuthInterceptor) scheduleRefreshToken(refreshDuration time.Duration) error {
 	err := intr.refreshToken()
 	if err != nil {
 		return err
@@ -182,7 +182,7 @@ func (intr *AuthInterceptorClient) scheduleRefreshToken(refreshDuration time.Dur
 	return nil
 }
 
-func (intr *AuthInterceptorClient) refreshToken() error {
+func (intr *ClientAuthInterceptor) refreshToken() error {
 	accessToken, err := intr.authClient.Login(intr.username, intr.password)
 	if err != nil {
 		return err

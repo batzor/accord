@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/jroimartin/gocui"
-	"github.com/qvntm/Accord/client"
+	"github.com/qvntm/accord/client"
 )
 
 type StreamCommunication struct {

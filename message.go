@@ -1,11 +1,11 @@
-package client
+package accord
 
 import (
 	"fmt"
 	"reflect"
 	"time"
 
-	"github.com/qvntm/Accord/pb"
+	"github.com/qvntm/accord/pb"
 )
 
 // RequestMessageType is a type of a stream request message.
@@ -269,4 +269,9 @@ func (x *ResponseMessage) GetUpdateMessageMsg() *UpdateMessageResponseMessage {
 		return x
 	}
 	return nil
+}
+
+func (m *ResponseMessage) getStreamResponse() (*pb.StreamResponse, error) {
+	// TODO: implement this function
+	return nil, nil
 }

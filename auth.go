@@ -10,26 +10,25 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	auth "github.com/qvntm/Accord/auth"
-	pb "github.com/qvntm/Accord/pb"
+	pb "github.com/qvntm/accord/pb"
 )
 
 // AuthServer is the server for authentication
 type AuthServer struct {
 	mutex      sync.RWMutex
 	users      map[string]*User
-	jwtManager *auth.JWTManager
+	jwtManager *JWTManager
 }
 
 // NewAuthServer returns a new auth server
 func NewAuthServer() *AuthServer {
 	return &AuthServer{
 		users:      make(map[string]*User),
-		jwtManager: auth.NewJWTManager(secretKey, tokenDuration),
+		jwtManager: NewJWTManager(secretKey, tokenDuration),
 	}
 }
 
-func (s *AuthServer) JWTManager() *auth.JWTManager {
+func (s *AuthServer) JWTManager() *JWTManager {
 	return s.jwtManager
 }
 

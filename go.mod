@@ -1,4 +1,4 @@
-module github.com/qvntm/Accord
+module github.com/qvntm/accord
 
 go 1.14
 
