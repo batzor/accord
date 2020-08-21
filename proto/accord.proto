@@ -1,85 +1,88 @@
 syntax = "proto3";
 
 package Accord;
-option go_package=".;pb";
+option go_package = ".;pb";
 
 import "google/protobuf/timestamp.proto";
 
 message Channel {
-    fixed64 id = 1;
-    string name = 2;
+  fixed64 id = 1;
+  string name = 2;
 }
 
 message CreateChannelRequest {
-    string name = 1;
-    bool isPublic = 2;
+  string name = 1;
+  bool isPublic = 2;
 }
 
 message CreateChannelResponse {}
 
 message GetChannelsRequest {
-    string username = 1;
-    fixed64 server_id = 2;
+  string username = 1;
+  fixed64 server_id = 2;
 }
 
-message GetChannelsResponse {
-    repeated Channel channels = 1;
-}
+message GetChannelsResponse { repeated Channel channels = 1; }
 
 message StreamRequest {
-    string username = 1;
-    fixed64 channel_id = 2;
-    
-    oneof msg {
-        UserMessage user_msg = 3;
-        ConfMessage conf_msg = 4;
+  string username = 1;
+  fixed64 channel_id = 2;
+
+  oneof msg {
+    UserMessage user_msg = 3;
+    ConfMessage conf_msg = 4;
+  }
+
+  message UserMessage {
+    oneof user_msg {
+      NewUserMessage new_user_msg = 1;
+      EditUserMessage edit_user_msg = 2;
+      DeleteUserMessage delete_user_msg = 3;
     }
 
-    enum UserMsgType {
-        SEND_MSG = 0;
-        EDIT_MSG = 1;
-        DELETE_MSG = 2;
+    message NewUserMessage { string content = 1; }
+
+    message EditUserMessage {
+      fixed64 message_id = 1;
+      string content = 2;
     }
 
-    message UserMessage {
-        UserMsgType type = 1;
-        string content   = 2;
-    }
+    message DeleteUserMessage { fixed64 message_id = 1; }
+  }
 
-    enum ConfMsgType {
-        EDIT_CHANNEL = 0;
-        EDIT_SERVER = 1;
-    }
+  enum ConfMsgType {
+    EDIT_CHANNEL = 0;
+    EDIT_SERVER = 1;
+  }
 
-    message ConfMessage {
-        ConfMsgType type   = 1;
-        string placeholder = 2;
-    }
+  message ConfMessage {
+    ConfMsgType type = 1;
+    string placeholder = 2;
+  }
 }
 
 message StreamResponse {
-    google.protobuf.Timestamp timestamp = 1;
+  fixed64 message_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
 
-    oneof event {
-        NewMessage new_msg  = 2;
-        UpdateMessage update_msg = 3;
-    }
+  oneof event {
+    NewMessage new_msg = 3;
+    UpdateMessage update_msg = 4;
+  }
 
-    message NewMessage {
-        fixed64 sender_id = 1;
-        string content    = 2;
-    }
+  message NewMessage {
+    fixed64 sender_id = 1;
+    string content = 2;
+  }
 
-    message UpdateMessage {
-        string placeholder = 1;
-    }
+  message UpdateMessage { string placeholder = 1; }
 }
 
 service Chat {
-    rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse) {}
+  rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse) {}
 
-    // Returns information about particular user's channels.
-    rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
+  // Returns information about particular user's channels.
+  rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
 
-    rpc Stream(stream StreamRequest) returns (stream StreamResponse) {}
+  rpc Stream(stream StreamRequest) returns (stream StreamResponse) {}
 }
