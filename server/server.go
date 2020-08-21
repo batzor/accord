@@ -149,11 +149,11 @@ func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 		switch req.GetMsg().(type) {
 		case *pb.StreamRequest_UserMsg:
 			// TODO: distinguish between WRITE/MODIFY/DELETE messages.
-			msg := req.GetUserMsg()
+			//msg := req.GetUserMsg()
 			channelMessage = &Message{
 				timestamp: time.Now(),
 				from:      username,
-				content:   msg.GetContent(),
+				content:   "", // TODO: implement the message.go properly and update this.
 			}
 		case *pb.StreamRequest_ConfMsg:
 			// TODO: Implement configuration message changes.
