@@ -49,7 +49,7 @@ func (s *AuthServer) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*
 		return nil, status.Errorf(codes.AlreadyExists, "Username is already in use")
 	}
 
-	user, err := NewUser(req.GetUsername(), req.GetPassword(), "")
+	user, err := NewUser(req.GetUsername(), req.GetPassword())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "Password could not be hashed")
 	}
@@ -71,7 +71,7 @@ func (s *AuthServer) Login(_ context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		return nil, status.Errorf(codes.InvalidArgument, "Incorrect password.")
 	}
 
-	token, err := s.jwtManager.Generate(user.username, user.role)
+	token, err := s.jwtManager.Generate(user.username)
 	if err != nil {
 		log.Print("token generation failed!")
 		return nil, status.Errorf(codes.Internal, "Cannot generate access token")

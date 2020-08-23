@@ -35,10 +35,11 @@ func (interceptor *ServerAuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	) (interface{}, error) {
 		log.Println("--> unary interceptor: ", info.FullMethod)
 
-		err := interceptor.Authorize(ctx, info.FullMethod)
+		// TODO: do we need this?
+		/*err := interceptor.Authorize(ctx, info.FullMethod)
 		if err != nil {
 			return nil, err
-		}
+		}*/
 
 		return handler(ctx, req)
 	}
@@ -63,12 +64,14 @@ func (interceptor *ServerAuthInterceptor) Stream() grpc.StreamServerInterceptor 
 	}
 }
 
+// TODO: revise this function. I didn't change the other structs much, so they will have to be
+// reconsidered too.
 func (interceptor *ServerAuthInterceptor) Authorize(ctx context.Context, method string) error {
-	allowedRoles, ok := interceptor.allowedRoles[method]
+	/*allowedRoles, ok := interceptor.allowedRoles[method]
 	if !ok {
 		// everyone can access
 		return nil
-	}
+	}*/
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -81,16 +84,16 @@ func (interceptor *ServerAuthInterceptor) Authorize(ctx context.Context, method 
 	}
 
 	accessToken := values[0]
-	claims, err := interceptor.jwtManager.Verify(accessToken)
+	_, err := interceptor.jwtManager.Verify(accessToken)
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
 	}
 
-	for _, role := range allowedRoles {
+	/*for _, role := range allowedRoles {
 		if role == claims.Role {
 			return nil
 		}
-	}
+	}*/
 
 	return status.Error(codes.PermissionDenied, "no permission to access this RPC")
 }
