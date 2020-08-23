@@ -8,22 +8,22 @@ import (
 
 // User contains user's information
 type User struct {
-	username       string
-	hashedPassword string
-	role           string
+	username        string
+	hashedPassword  string
+	channelsToRoles map[uint64]Role
 }
 
 // NewUser returns a new user
-func NewUser(username string, password string, role string) (*User, error) {
+func NewUser(username string, password string) (*User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("cannot hash password: %w", err)
 	}
 
 	user := &User{
-		username:       username,
-		hashedPassword: string(hashedPassword),
-		role:           role,
+		username:        username,
+		hashedPassword:  string(hashedPassword),
+		channelsToRoles: make(map[uint64]Role),
 	}
 
 	return user, nil
@@ -38,8 +38,8 @@ func (user *User) IsCorrectPassword(password string) bool {
 // Clone returns a clone of this user
 func (user *User) Clone() *User {
 	return &User{
-		username:       user.username,
-		hashedPassword: user.hashedPassword,
-		role:           user.role,
+		username:        user.username,
+		hashedPassword:  user.hashedPassword,
+		channelsToRoles: make(map[uint64]Role),
 	}
 }

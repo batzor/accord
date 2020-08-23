@@ -10,12 +10,12 @@ import (
 type Channel struct {
 	channelID           uint64
 	name                string
-	msgc                chan RequestMessage
-	usersToStreams      map[string]pb.Chat_StreamServer
+	msgc                chan *pb.ChannelStreamRequest
+	usersToStreams      map[string]pb.Chat_ChannelStreamServer
 	users               []User
-	pinnedMsg           uint64
+	pinnedMsgID         uint64
 	isPublic            bool
-	rolesWithPermission map[Permission][]string
+	rolesWithPermission map[Permission][]Role
 }
 
 // NewChannel creates a new channel with provided parameters.
@@ -23,11 +23,11 @@ func NewChannel(uid uint64, name string, isPublic bool) *Channel {
 	return &Channel{
 		channelID:           uid,
 		name:                name,
-		msgc:                make(chan RequestMessage),
-		usersToStreams:      map[string]pb.Chat_StreamServer{},
-		pinnedMsg:           0,
+		msgc:                make(chan *pb.ChannelStreamRequest),
+		usersToStreams:      make(map[string]pb.Chat_ChannelStreamServer),
+		pinnedMsgID:         0,
 		isPublic:            isPublic,
-		rolesWithPermission: map[Permission][]string{},
+		rolesWithPermission: make(map[Permission][]Role),
 	}
 }
 
@@ -43,12 +43,11 @@ func (ch *Channel) Listen() {
 }
 
 // Broadcast sends message to all users in the chat.
-func (ch *Channel) Broadcast(msg *ResponseMessage) {
+func (ch *Channel) Broadcast(response *pb.ChannelStreamResponse) {
 	for _, user := range ch.users {
 		// TODO: also check for permissions to read (i.e. receive broadcast)
 		// Checking whether user is subscribed to the channel at the moment
 		if stream := ch.usersToStreams[user.username]; stream != nil {
-			response, _ := msg.getStreamResponse()
 			if err := stream.Send(response); err != nil {
 				log.Printf("Could not send message to %s in channel %v\n", user.username, *ch)
 			}

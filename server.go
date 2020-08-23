@@ -35,8 +35,8 @@ func NewAccordServer() *AccordServer {
 	return &AccordServer{
 		authServer:      authServer,
 		authInterceptor: NewServerAuthInterceptor(authServer.JWTManager()),
-		users:           map[string]*User{},
-		channels:        map[uint64]*Channel{},
+		users:           make(map[string]*User),
+		channels:        make(map[uint64]*Channel),
 		jwtManager:      NewJWTManager(secretKey, tokenDuration),
 	}
 }
@@ -51,41 +51,38 @@ func (s *AccordServer) LoadUsers() error {
 	return fmt.Errorf("Unimplemented!")
 }
 
-func (s *AccordServer) CreateChannel(_ context.Context, req *pb.CreateChannelRequest) (*pb.CreateChannelResponse, error) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+func (s *AccordServer) AddChannel(_ context.Context, req *pb.AddChannelRequest) (*pb.AddChannelResponse, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	ch := NewChannel(uint64(len(s.channels)), req.GetName(), req.GetIsPublic())
+	// TODO: add the new channel to the DB.
+	// TODO: broadcast to ServerStream creation of new channel.
 	s.channels[ch.channelID] = ch
 	go ch.Listen()
 
-	res := &pb.CreateChannelResponse{}
+	res := &pb.AddChannelResponse{}
 	log.Printf("New Channel %s created", req.GetName())
 	return res, nil
 }
 
-func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsRequest) (*pb.GetChannelsResponse, error) {
-	if ctx.Err() == context.Canceled {
-		log.Println("Client has cancelled the request.")
-		return nil, status.Errorf(codes.DeadlineExceeded, "client has cancelled the request")
+func (s *AccordServer) RemoveChannel(_ context.Context, req *pb.RemoveChannelRequest) (*pb.RemoveChannelResponse, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	channelID := req.GetChannelId()
+	if _, ok := s.channels[req.GetChannelId()]; ok {
+		// TODO: remove the record from the DB.
+		// TODO: broadcast to ServerStream removal of the channel.
+		delete(s.channels, req.GetChannelId())
+	} else {
+		return nil, status.Errorf(codes.InvalidArgument, "channel with ID %d doesn't exist", channelID)
 	}
 
-	if req.GetUsername() == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "username cannot be empty")
-	}
-
-	res := &pb.GetChannelsResponse{
-		Channels: []*pb.Channel{},
-	}
-	for _, channel := range s.channels {
-		res.Channels = append(res.Channels, &pb.Channel{
-			Id:   channel.channelID,
-			Name: channel.name,
-		})
-	}
+	res := &pb.RemoveChannelResponse{}
+	log.Printf("Channel with id %d has been removed\n", channelID)
 	return res, nil
 }
 
-func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
+func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
 	var channel *Channel = nil
 	var username string = ""
 	ctx := srv.Context()
@@ -98,8 +95,8 @@ func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 
 		if username == "" {
 			username = req.GetUsername()
-		} else if n := req.GetUsername(); username != n {
-			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent usernames\nhave:%s\nwant:%s\n", n, username)
+		} else if reqUsername := req.GetUsername(); username != reqUsername {
+			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent usernames\nhave:%s\nwant:%s\n", reqUsername, username)
 		}
 
 		if channel == nil {
@@ -108,31 +105,15 @@ func (s *AccordServer) Stream(srv pb.Chat_StreamServer) error {
 				return status.Errorf(codes.InvalidArgument, "invalid channel ID: %v", err)
 			}
 			channel.usersToStreams[username] = srv
-		} else if id := req.GetChannelId(); channel.channelID != id {
-			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent channel IDs\nhave:%d\nwant:%d\n", id, channel.channelID)
+		} else if reqChannelID := req.GetChannelId(); channel.channelID != reqChannelID {
+			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent channel IDs\nhave:%d\nwant:%d\n", reqChannelID, channel.channelID)
 		}
 
-		var channelMessage *RequestMessage = nil
-
-		// verify StreamRequest contains a valid message type
-		switch req.GetMsg().(type) {
-		case *pb.StreamRequest_UserMsg:
-			// TODO: implement the message.go properly and update this.
-			channelMessage = &RequestMessage{}
-		case *pb.StreamRequest_ConfMsg:
-			// TODO: Implement configuration message changes.
-			return status.Errorf(codes.Unimplemented, "configuration message handling is not implemented")
-		default:
-			return status.Errorf(codes.InvalidArgument, "invalid message type")
-		}
-
-		if channelMessage != nil {
-			select {
-			// handle abrupt client disconnection
-			case <-ctx.Done():
-				return status.Error(codes.Canceled, ctx.Err().Error())
-			case channel.msgc <- *channelMessage:
-			}
+		select {
+		// handle abrupt client disconnection
+		case <-ctx.Done():
+			return status.Error(codes.Canceled, ctx.Err().Error())
+		case channel.msgc <- req:
 		}
 	}
 
