@@ -116,7 +116,7 @@ message ChannelConfigMessage {
   message NameChannelConfigMessage { string new_channel_name = 1; }
 
   message RoleChannelConfigMessage {
-    fixed64 user_id = 1;
+    string username = 1;
     Role role = 2;
   }
 
