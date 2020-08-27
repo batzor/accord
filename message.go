@@ -53,8 +53,8 @@ type NameChannelConfigMessage struct {
 func (*NameChannelConfigMessage) isChannelConfigMessageMsg() {}
 
 type RoleChannelConfigMessage struct {
-	UserID uint64
-	Role   Role
+	Username string
+	Role     Role
 }
 
 func (*RoleChannelConfigMessage) isChannelConfigMessageMsg() {}
