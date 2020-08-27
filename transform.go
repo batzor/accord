@@ -67,8 +67,8 @@ func getChannelConfigMessageNameMsg(m *NameChannelConfigMessage) *pb.ChannelConf
 func getChannelConfigMessageRoleMsg(m *RoleChannelConfigMessage) *pb.ChannelConfigMessage_RoleMsg {
 	return &pb.ChannelConfigMessage_RoleMsg{
 		RoleMsg: &pb.ChannelConfigMessage_RoleChannelConfigMessage{
-			UserId: m.UserID,
-			Role:   AccordToPBRoles[m.Role],
+			Username: m.Username,
+			Role:     AccordToPBRoles[m.Role],
 		},
 	}
 }
@@ -158,8 +158,8 @@ func getNameChannelConfigMessage(m *pb.ChannelConfigMessage_NameChannelConfigMes
 
 func getRoleChannelConfigMessage(m *pb.ChannelConfigMessage_RoleChannelConfigMessage) *RoleChannelConfigMessage {
 	return &RoleChannelConfigMessage{
-		UserID: m.GetUserId(),
-		Role:   PBToAccordRoles[m.GetRole()],
+		Username: m.GetUsername(),
+		Role:     PBToAccordRoles[m.GetRole()],
 	}
 }
 

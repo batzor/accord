@@ -8,9 +8,8 @@ import (
 
 // User contains user's information
 type User struct {
-	username        string
-	hashedPassword  string
-	channelsToRoles map[uint64]Role
+	username       string
+	hashedPassword string
 }
 
 // NewUser returns a new user
@@ -21,9 +20,8 @@ func NewUser(username string, password string) (*User, error) {
 	}
 
 	user := &User{
-		username:        username,
-		hashedPassword:  string(hashedPassword),
-		channelsToRoles: make(map[uint64]Role),
+		username:       username,
+		hashedPassword: string(hashedPassword),
 	}
 
 	return user, nil
@@ -38,8 +36,7 @@ func (user *User) IsCorrectPassword(password string) bool {
 // Clone returns a clone of this user
 func (user *User) Clone() *User {
 	return &User{
-		username:        user.username,
-		hashedPassword:  user.hashedPassword,
-		channelsToRoles: make(map[uint64]Role),
+		username:       user.username,
+		hashedPassword: user.hashedPassword,
 	}
 }

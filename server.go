@@ -25,7 +25,6 @@ type AccordServer struct {
 	authInterceptor *ServerAuthInterceptor
 	listener        net.Listener
 	mutex           sync.RWMutex
-	users           map[string]*User
 	channels        map[uint64]*Channel
 	jwtManager      *JWTManager
 }
@@ -35,20 +34,19 @@ func NewAccordServer() *AccordServer {
 	return &AccordServer{
 		authServer:      authServer,
 		authInterceptor: NewServerAuthInterceptor(authServer.JWTManager()),
-		users:           make(map[string]*User),
 		channels:        make(map[uint64]*Channel),
 		jwtManager:      NewJWTManager(secretKey, tokenDuration),
 	}
 }
 
-// Load channels from the persistent storage
+// LoadChannels loads channels from the persistent storage
 func (s *AccordServer) LoadChannels() error {
-	return fmt.Errorf("Unimplemented!")
+	return fmt.Errorf("unimplemented")
 }
 
-// Load channels from the persistent storage
+// LoadUsers loads channels from the persistent storage
 func (s *AccordServer) LoadUsers() error {
-	return fmt.Errorf("Unimplemented!")
+	return fmt.Errorf("unimplemented")
 }
 
 func (s *AccordServer) AddChannel(_ context.Context, req *pb.AddChannelRequest) (*pb.AddChannelResponse, error) {
@@ -58,7 +56,7 @@ func (s *AccordServer) AddChannel(_ context.Context, req *pb.AddChannelRequest) 
 	// TODO: add the new channel to the DB.
 	// TODO: broadcast to ServerStream creation of new channel.
 	s.channels[ch.channelID] = ch
-	go ch.Listen()
+	go ch.listen()
 
 	res := &pb.AddChannelResponse{}
 	log.Printf("New Channel %s created", req.GetName())
@@ -82,6 +80,8 @@ func (s *AccordServer) RemoveChannel(_ context.Context, req *pb.RemoveChannelReq
 	return res, nil
 }
 
+// ChannelStream is the implementation of bidirectional streaming of client
+// with one channel on the server.
 func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
 	var channel *Channel = nil
 	var username string = ""
@@ -105,6 +105,12 @@ func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
 				return status.Errorf(codes.InvalidArgument, "invalid channel ID: %v", err)
 			}
 			channel.usersToStreams[username] = srv
+			// so far, authomatically add user as a member when he subscribes to the channel
+			// TODO: add some RPC for user to request to join the channel with particular role.
+			channel.users[username] = &ChannelUser{
+				user: s.authServer.users[username],
+				role: MemberRole,
+			}
 		} else if reqChannelID := req.GetChannelId(); channel.channelID != reqChannelID {
 			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent channel IDs\nhave:%d\nwant:%d\n", reqChannelID, channel.channelID)
 		}
@@ -112,6 +118,7 @@ func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
 		select {
 		// handle abrupt client disconnection
 		case <-ctx.Done():
+			channel.usersToStreams[username] = nil
 			return status.Error(codes.Canceled, ctx.Err().Error())
 		case channel.msgc <- req:
 		}
