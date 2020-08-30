@@ -50,7 +50,7 @@ message AddChannelRequest {
   bool isPublic = 2;
 }
 
-message AddChannelResponse {}
+message AddChannelResponse { fixed64 channel_id = 1; }
 
 message RemoveChannelRequest { fixed64 channel_id = 1; }
 
