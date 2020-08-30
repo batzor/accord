@@ -58,7 +58,9 @@ func (s *AccordServer) AddChannel(_ context.Context, req *pb.AddChannelRequest) 
 	s.channels[ch.channelID] = ch
 	go ch.listen()
 
-	res := &pb.AddChannelResponse{}
+	res := &pb.AddChannelResponse{
+		ChannelId: ch.channelID,
+	}
 	log.Printf("New Channel %s created", req.GetName())
 	return res, nil
 }

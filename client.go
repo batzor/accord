@@ -70,9 +70,9 @@ func (c *AccordClient) CreateUser(username string, password string) error {
 }
 
 // CreateChannel sends the request to create new channel.
-func (c *AccordClient) CreateChannel(name string, isPublic bool) error {
+func (c *AccordClient) CreateChannel(name string, isPublic bool) (uint64, error) {
 	if c.ChatClient == nil {
-		return fmt.Errorf("Login required")
+		return 0, fmt.Errorf("Login required")
 	}
 
 	req := &pb.AddChannelRequest{
@@ -83,8 +83,8 @@ func (c *AccordClient) CreateChannel(name string, isPublic bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := c.ChatClient.AddChannel(ctx, req)
-	return err
+	channelID, err := c.ChatClient.AddChannel(ctx, req)
+	return channelID.GetChannelId(), err
 }
 
 // RemoveChannel permanently deletes the channel and all of its data.
