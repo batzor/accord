@@ -21,10 +21,12 @@ func TestClientCreateUser(t *testing.T) {
 	c := accord.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
-	err = c.CreateUser("testuser1", "testpw1")
+	username := accord.GetRandUsername()
+	password := accord.GetRandPassword()
+	err = c.CreateUser(username, password)
 	require.NoError(t, err)
 
-	err = c.Login("testuser1", "testpw1")
+	err = c.Login(username, password)
 	require.NoError(t, err)
 }
 
@@ -72,18 +74,22 @@ func TestClientCreateChannel(t *testing.T) {
 	c := accord.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
+	username := accord.GetRandUsername()
+	password := accord.GetRandPassword()
+	channelName := accord.GetRandChannelName()
+	isPublic := accord.GetRandBool()
 	// Channel creation has to fail when user is
 	// not logged in.
-	_, err = c.CreateChannel("testchan1", true)
+	_, err = c.CreateChannel(channelName, isPublic)
 	require.NotNil(t, err)
 
-	err = c.CreateUser("testuser1", "testpw1")
+	err = c.CreateUser(username, password)
 	require.NoError(t, err)
 
-	err = c.Login("testuser1", "testpw1")
+	err = c.Login(username, password)
 	require.NoError(t, err)
 
-	channelID, err := c.CreateChannel("testchan1", true)
+	channelID, err := c.CreateChannel(channelName, isPublic)
 	require.NoError(t, err)
 
 	err = c.RemoveChannel(channelID)
@@ -106,22 +112,25 @@ func TestClientCreateManyChannels(t *testing.T) {
 	c := accord.NewAccordClient(serverID)
 	c.Connect(serverAddr)
 
-	err = c.CreateUser("testuser1", "testpw1")
+	username := accord.GetRandUsername()
+	password := accord.GetRandPassword()
+
+	err = c.CreateUser(username, password)
 	require.NoError(t, err)
 
-	err = c.Login("testuser1", "testpw1")
+	err = c.Login(username, password)
 	require.NoError(t, err)
 
-	id1, err := c.CreateChannel("testChan1", true)
+	id1, err := c.CreateChannel(accord.GetRandChannelName(), accord.GetRandBool())
 	require.NoError(t, err)
 
 	err = c.RemoveChannel(id1)
 	require.NoError(t, err)
 
-	id2, err := c.CreateChannel("testChan2", false)
+	id2, err := c.CreateChannel(accord.GetRandChannelName(), accord.GetRandBool())
 	require.NoError(t, err)
 
-	id3, err := c.CreateChannel("testChan3", true)
+	id3, err := c.CreateChannel(accord.GetRandChannelName(), accord.GetRandBool())
 	require.NoError(t, err)
 
 	err = c.RemoveChannel(id2)
