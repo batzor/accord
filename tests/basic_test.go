@@ -139,3 +139,44 @@ func TestClientCreateManyChannels(t *testing.T) {
 	err = c.RemoveChannel(id3)
 	require.NoError(t, err)
 }
+
+func TestClientChannelStream(t *testing.T) {
+	t.Parallel()
+
+	serverID := uint64(12345)
+	s := accord.NewAccordServer()
+	serverAddr, err := s.Listen("localhost:0")
+	go func() {
+		s.Start()
+		t.Log("Server stopped.")
+	}()
+
+	// create first user and login
+	c1 := accord.NewAccordClient(serverID)
+	c1.Connect(serverAddr)
+	username1 := accord.GetRandUsername()
+	password1 := accord.GetRandPassword()
+	err = c1.CreateUser(username1, password1)
+	require.NoError(t, err)
+	err = c1.Login(username1, password1)
+	require.NoError(t, err)
+
+	// create second user and login
+	c2 := accord.NewAccordClient(serverID)
+	c2.Connect(serverAddr)
+	username2 := accord.GetRandUsername()
+	password2 := accord.GetRandPassword()
+	err = c2.CreateUser(username2, password2)
+	require.NoError(t, err)
+	err = c2.Login(username2, password2)
+	require.NoError(t, err)
+
+	// first user will create a public channel
+	channelName := accord.GetRandChannelName()
+	isPublic := accord.GetRandBool()
+	channelID, err := c1.CreateChannel(channelName, isPublic)
+	require.NoError(t, err)
+
+	err = c1.RemoveChannel(channelID)
+	require.NoError(t, err)
+}
