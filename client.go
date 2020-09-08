@@ -141,10 +141,6 @@ func (c *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunication,
 		defer close(closereqc)
 		for {
 			msg := <-reqc
-			if msg.Username != c.Username {
-				log.Printf("Inconsistent usernames in channel: %v\nHave:%s\nWant:%s\n", reqc, msg.Username, c.Username)
-				continue
-			}
 			if msg.ChannelID != channelID {
 				log.Printf("Inconsistent channel id used in channel: %v\nHave:%d\nWant:%d\n", reqc, msg.ChannelID, channelID)
 				continue

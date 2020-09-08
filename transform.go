@@ -109,13 +109,11 @@ func getChannelStreamRequest(m *ChannelStreamRequest) *pb.ChannelStreamRequest {
 	switch m.GetMsg().(type) {
 	case *UserChannelStreamRequest:
 		return &pb.ChannelStreamRequest{
-			Username:  m.Username,
 			ChannelId: m.ChannelID,
 			Msg:       getChannelStreamRequestUserMsg(m.GetUserMsg()),
 		}
 	case *ChannelConfigMessage:
 		return &pb.ChannelStreamRequest{
-			Username:  m.Username,
 			ChannelId: m.ChannelID,
 			Msg:       getChannelStreamRequestConfigMsg(m.GetConfMsg()),
 		}

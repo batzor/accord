@@ -117,19 +117,20 @@ func (s *AccordServer) RemoveChannel(_ context.Context, req *pb.RemoveChannelReq
 // with one channel on the server.
 func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
 	var channel *Channel = nil
-	var username string = ""
 	ctx := srv.Context()
+
+	username, err := getUsernameFromContext(ctx)
+	if err != nil {
+		return status.Errorf(codes.InvalidArgument, "failed to get username from context")
+	}
+	if username == "" {
+		return status.Errorf(codes.InvalidArgument, "username cannot be empty")
+	}
 
 	for {
 		req, err := srv.Recv()
 		if err != nil {
 			log.Fatalf("Error while reading client stream: %v", err)
-		}
-
-		if username == "" {
-			username = req.GetUsername()
-		} else if reqUsername := req.GetUsername(); username != reqUsername {
-			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent usernames\nhave:%s\nwant:%s\n", reqUsername, username)
 		}
 
 		if channel == nil {

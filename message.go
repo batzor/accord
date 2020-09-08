@@ -79,20 +79,12 @@ const (
 
 // ChannelStreamRequest represents a stream request for a single channel.
 type ChannelStreamRequest struct {
-	Username  string
 	ChannelID uint64
 	Msg       isChannelStreamRequestMsg
 }
 
 type isChannelStreamRequestMsg interface {
 	isChannelStreamRequestMsg()
-}
-
-func (m *ChannelStreamRequest) GetUsername() string {
-	if m != nil {
-		return m.Username
-	}
-	return ""
 }
 
 func (m *ChannelStreamRequest) GetChannelID() uint64 {
