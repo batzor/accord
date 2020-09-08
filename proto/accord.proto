@@ -126,12 +126,11 @@ message ChannelConfigMessage {
 // Stream response for bidirectional streaming of user and  config
 // messages with a single channel.
 message ChannelStreamRequest {
-  string username = 1;
-  fixed64 channel_id = 2;
+  fixed64 channel_id = 1;
 
   oneof msg {
-    UserMessage user_msg = 3;
-    ChannelConfigMessage config_msg = 4;
+    UserMessage user_msg = 2;
+    ChannelConfigMessage config_msg = 3;
   }
 
   message UserMessage {
