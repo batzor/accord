@@ -11,7 +11,7 @@ import (
 	pb "github.com/qvntm/accord/pb"
 )
 
-type ChannelUser struct {
+type channelUser struct {
 	user *User
 	role Role
 }
@@ -22,7 +22,7 @@ type Channel struct {
 	name      string
 	msgc      chan *pb.ChannelStreamRequest
 	// users contains general information about users in the channel
-	users map[string]*ChannelUser
+	users map[string]*channelUser
 	// usersToStreams has only streams of users, which are streaming at the moment
 	usersToStreams      map[string]pb.Chat_ChannelStreamServer
 	pinnedMsgID         uint64
@@ -36,11 +36,15 @@ func NewChannel(uid uint64, name string, isPublic bool) *Channel {
 		channelID:           uid,
 		name:                name,
 		msgc:                make(chan *pb.ChannelStreamRequest),
-		users:               make(map[string]*ChannelUser),
+		users:               make(map[string]*channelUser),
 		pinnedMsgID:         0,
 		isPublic:            isPublic,
 		rolesWithPermission: make(map[Permission][]Role),
 	}
+}
+
+func (ch *Channel) addUser(user *channelUser) {
+	ch.users[user.user.username] = user
 }
 
 // Listen listens for the incoming messages.

@@ -2,6 +2,7 @@ package accord
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -13,15 +14,13 @@ import (
 
 // ServerAuthInterceptor is a server interceptor for authentication and authorization
 type ServerAuthInterceptor struct {
-	allowedRoles map[string][]string
-	jwtManager   *JWTManager
+	jwtManager *JWTManager
 }
 
 // NewServerAuthInterceptor returns a new auth interceptor
 func NewServerAuthInterceptor(jwtManager *JWTManager) *ServerAuthInterceptor {
 	return &ServerAuthInterceptor{
-		allowedRoles: make(map[string][]string),
-		jwtManager:   jwtManager,
+		jwtManager: jwtManager,
 	}
 }
 
@@ -35,11 +34,15 @@ func (interceptor *ServerAuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	) (interface{}, error) {
 		log.Println("--> unary interceptor: ", info.FullMethod)
 
-		// TODO: do we need this?
-		/*err := interceptor.Authorize(ctx, info.FullMethod)
+		claims, err := interceptor.Authorize(ctx, info.FullMethod)
 		if err != nil {
 			return nil, err
-		}*/
+		}
+
+		if claims != nil {
+			md := metadata.Pairs("username", claims.Username)
+			ctx = metadata.NewIncomingContext(ctx, md)
+		}
 
 		return handler(ctx, req)
 	}
@@ -55,47 +58,46 @@ func (interceptor *ServerAuthInterceptor) Stream() grpc.StreamServerInterceptor 
 	) error {
 		log.Println("--> stream interceptor: ", info.FullMethod)
 
-		err := interceptor.Authorize(stream.Context(), info.FullMethod)
+		claims, err := interceptor.Authorize(stream.Context(), info.FullMethod)
 		if err != nil {
 			return err
+		}
+
+		if claims != nil {
+			md, ok := metadata.FromIncomingContext(stream.Context())
+			if !ok {
+				return fmt.Errorf("could not extract metadata from outgoing context")
+			}
+			md.Append("username", claims.Username)
+			stream.SetHeader(md)
 		}
 
 		return handler(srv, stream)
 	}
 }
 
-// TODO: revise this function. I didn't change the other structs much, so they will have to be
-// reconsidered too.
-func (interceptor *ServerAuthInterceptor) Authorize(ctx context.Context, method string) error {
-	/*allowedRoles, ok := interceptor.allowedRoles[method]
-	if !ok {
-		// everyone can access
-		return nil
-	}*/
+func (interceptor *ServerAuthInterceptor) Authorize(ctx context.Context, method string) (*UserClaims, error) {
+	if method == "/accord.AuthService/CreateUser" || method == "/accord.AuthService/Login" {
+		return nil, nil
+	}
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return status.Errorf(codes.Unauthenticated, "metadata is not provided")
+		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
 	values := md["authorization"]
 	if len(values) == 0 {
-		return status.Errorf(codes.Unauthenticated, "authorization token is not provided")
+		return nil, status.Errorf(codes.Unauthenticated, "authorization token is not provided")
 	}
 
 	accessToken := values[0]
-	_, err := interceptor.jwtManager.Verify(accessToken)
+	claims, err := interceptor.jwtManager.Verify(accessToken)
 	if err != nil {
-		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
+		return nil, status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
 	}
 
-	/*for _, role := range allowedRoles {
-		if role == claims.Role {
-			return nil
-		}
-	}*/
-
-	return status.Error(codes.PermissionDenied, "no permission to access this RPC")
+	return claims, nil
 }
 
 // ClientAuthInterceptor is a client interceptor for authentication

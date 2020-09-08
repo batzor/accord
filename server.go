@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	pb "github.com/qvntm/accord/pb"
@@ -49,10 +50,40 @@ func (s *AccordServer) LoadUsers() error {
 	return fmt.Errorf("unimplemented")
 }
 
-func (s *AccordServer) AddChannel(_ context.Context, req *pb.AddChannelRequest) (*pb.AddChannelResponse, error) {
+func getUsernameFromContext(ctx context.Context) (string, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return "", fmt.Errorf("metadata is not provided")
+	}
+
+	values := md["username"]
+	if len(values) == 0 {
+		return "", fmt.Errorf("there is no username key in metadata")
+	}
+
+	return values[0], nil
+}
+
+// AddChannel creates a new channel with given parameters. The user who created the channel
+// automatically becomes the channel's superadmin.
+func (s *AccordServer) AddChannel(ctx context.Context, req *pb.AddChannelRequest) (*pb.AddChannelResponse, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+
+	username, err := getUsernameFromContext(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	}
+	if username == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "username cannot be empty")
+	}
+
 	ch := NewChannel(uint64(len(s.channels)), req.GetName(), req.GetIsPublic())
+	ch.users[username] = &channelUser{
+		user: s.authServer.users[username],
+		role: SuperadminRole,
+	}
+
 	// TODO: add the new channel to the DB.
 	// TODO: broadcast to ServerStream creation of new channel.
 	s.channels[ch.channelID] = ch
@@ -106,13 +137,16 @@ func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
 			if channel == nil {
 				return status.Errorf(codes.InvalidArgument, "invalid channel ID: %v", err)
 			}
-			channel.usersToStreams[username] = srv
 			// so far, authomatically add user as a member when he subscribes to the channel
 			// TODO: add some RPC for user to request to join the channel with particular role.
-			channel.users[username] = &ChannelUser{
-				user: s.authServer.users[username],
-				role: MemberRole,
+			if _, ok := channel.users[username]; !ok {
+				channel.users[username] = &channelUser{
+					user: s.authServer.users[username],
+					role: MemberRole,
+				}
 			}
+			// add the stream for broadcasting to the user
+			channel.usersToStreams[username] = srv
 		} else if reqChannelID := req.GetChannelId(); channel.channelID != reqChannelID {
 			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent channel IDs\nhave:%d\nwant:%d\n", reqChannelID, channel.channelID)
 		}
