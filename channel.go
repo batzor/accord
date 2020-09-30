@@ -16,8 +16,22 @@ type channelUser struct {
 	role Role
 }
 
-// Channel represents a single private or public messaging channel.
-type Channel struct {
+// ClientChannel represents a single private or public messaging channel.
+type ClientChannel struct {
+	ChannelID uint64
+	Name      string
+	// Set if the data for this channel has been cached on the client side.
+	IsCached            bool
+	Users               map[string]*channelUser
+	PinnedMsgID         uint64
+	IsPublic            bool
+	RolesWithPermission map[Permission][]Role
+	Messages            []Message
+	Stream              pb.Chat_ChannelStreamClient
+}
+
+// ServerChannel represents a single private or public messaging channel.
+type ServerChannel struct {
 	channelID uint64
 	name      string
 	msgc      chan *pb.ChannelStreamRequest
@@ -30,9 +44,9 @@ type Channel struct {
 	rolesWithPermission map[Permission][]Role
 }
 
-// NewChannel creates a new channel with provided parameters.
-func NewChannel(uid uint64, name string, isPublic bool) *Channel {
-	return &Channel{
+// NewServerChannel creates a new channel with provided parameters.
+func NewServerChannel(uid uint64, name string, isPublic bool) *ServerChannel {
+	return &ServerChannel{
 		channelID:           uid,
 		name:                name,
 		msgc:                make(chan *pb.ChannelStreamRequest),
@@ -43,12 +57,12 @@ func NewChannel(uid uint64, name string, isPublic bool) *Channel {
 	}
 }
 
-func (ch *Channel) addUser(user *channelUser) {
+func (ch *ServerChannel) addUser(user *channelUser) {
 	ch.users[user.user.username] = user
 }
 
 // Listen listens for the incoming messages.
-func (ch *Channel) listen() {
+func (ch *ServerChannel) listen() {
 	for {
 		select {
 		case req := <-ch.msgc:
@@ -63,7 +77,7 @@ func (ch *Channel) listen() {
 }
 
 // Broadcast sends message to all users in the chat.
-func (ch *Channel) broadcast(response *pb.ChannelStreamResponse) {
+func (ch *ServerChannel) broadcast(response *pb.ChannelStreamResponse) {
 	// only broadcast to clients, who are currently streaming with the server
 	for username, stream := range ch.usersToStreams {
 		// TODO: also check for permissions to read (i.e. receive broadcast)
@@ -73,7 +87,7 @@ func (ch *Channel) broadcast(response *pb.ChannelStreamResponse) {
 	}
 }
 
-func (ch *Channel) processChannelStreamRequest(m *pb.ChannelStreamRequest) (*pb.ChannelStreamResponse, error) {
+func (ch *ServerChannel) processChannelStreamRequest(m *pb.ChannelStreamRequest) (*pb.ChannelStreamResponse, error) {
 	switch m.GetMsg().(type) {
 	case *pb.ChannelStreamRequest_UserMsg:
 		res, err := ch.processChannelStreamRequestUserMessage(m.GetUserMsg())
@@ -100,7 +114,7 @@ func (ch *Channel) processChannelStreamRequest(m *pb.ChannelStreamRequest) (*pb.
 }
 
 // TODO: Totally rewrite this function when we add persistent layer.
-func (ch *Channel) processChannelStreamRequestUserMessage(m *pb.ChannelStreamRequest_UserMessage) (*pb.ChannelStreamResponse_UserMessage, error) {
+func (ch *ServerChannel) processChannelStreamRequestUserMessage(m *pb.ChannelStreamRequest_UserMessage) (*pb.ChannelStreamResponse_UserMessage, error) {
 	switch m.GetUserMsg().(type) {
 	case *pb.ChannelStreamRequest_UserMessage_NewUserMsg:
 		timestamp, _ := ptypes.TimestampProto(time.Now())
@@ -121,7 +135,7 @@ func (ch *Channel) processChannelStreamRequestUserMessage(m *pb.ChannelStreamReq
 	return nil, fmt.Errorf("Invalid object type: %v", reflect.TypeOf(m.GetUserMsg()))
 }
 
-func (ch *Channel) processChannelStreamRequestConfigMessage(m *pb.ChannelConfigMessage) (*pb.ChannelConfigMessage, error) {
+func (ch *ServerChannel) processChannelStreamRequestConfigMessage(m *pb.ChannelConfigMessage) (*pb.ChannelConfigMessage, error) {
 	switch m.GetMsg().(type) {
 	case *pb.ChannelConfigMessage_NameMsg:
 		nameMsg := m.GetNameMsg()
