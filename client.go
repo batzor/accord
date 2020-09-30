@@ -32,7 +32,7 @@ type AccordClient struct {
 	pb.ChatClient
 	Username string
 	ServerID uint64
-	Channels []ClientChannel
+	Channels map[uint64]*ClientChannel
 }
 
 func NewAccordClient(serverID uint64) *AccordClient {
@@ -126,38 +126,22 @@ func (c *AccordClient) Login(username string, password string) error {
 	return nil
 }
 
-// Subscribe creates stream client and returns communication channels, which are wrapped in structs,
-// to which messages can be pushed/received. In the structs, there are also channels for communicating
-// when the reqc and resc channels need to be closed.
-// "channelID" is only used to check that each request contains the same (consistent) channel ID.
-func (c *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunication, *StreamResponseCommunication, error) {
-	chatClient, err := c.ChatClient.ChannelStream(context.Background())
-	if err != nil {
-		return nil, nil, fmt.Errorf("ChannelStream RPC failed: %v", err)
+// Subscribe returns the channel, which will send all the updates about the channel.
+func (c *AccordClient) Subscribe(channelID uint64) (*StreamResponseCommunication, error) {
+	channel, ok := c.Channels[channelID]
+	if !ok {
+		return nil, fmt.Errorf("there is no channel with id %d in the server or it has not been fetched yet", channelID)
 	}
 
-	reqc, closereqc := make(chan *ChannelStreamRequest), make(chan struct{})
-	go func() {
-		defer close(closereqc)
-		for {
-			msg := <-reqc
-			if msg.ChannelID != channelID {
-				log.Printf("Inconsistent channel id used in channel: %v\nHave:%d\nWant:%d\n", reqc, msg.ChannelID, channelID)
-				continue
-			}
-			req := getChannelStreamRequest(msg)
-			if err := chatClient.Send(req); err != nil {
-				log.Printf("Terminating client stream's send goroutine: %v\n", err)
-				return
-			}
-		}
-	}()
-
+	// TODO: I think this needs to be reorganized.
+	// Current state: process one message and then wait until receiver reads it.
+	// Desired state: process all messages from server in for loop and then notify
+	// the receiver about those asynchronously.
 	resc, closeresc := make(chan *ChannelStreamResponse), make(chan struct{})
 	go func() {
 		defer close(resc)
 		for {
-			res, err := chatClient.Recv()
+			res, err := channel.Stream.Recv()
 			if err != nil {
 				log.Printf("Terminating client stream's recv goroutine: %v", err)
 				return
@@ -173,13 +157,23 @@ func (c *AccordClient) Subscribe(channelID uint64) (*StreamRequestCommunication,
 		}
 	}()
 
-	reqComm := &StreamRequestCommunication{
-		Reqc:   reqc,
-		Closec: closereqc,
-	}
 	resComm := &StreamResponseCommunication{
 		Resc:   resc,
 		Closec: closeresc,
 	}
-	return reqComm, resComm, nil
+	return resComm, nil
+}
+
+func (c *AccordClient) Send(channelID uint64, msg *ChannelStreamRequest) error {
+	channel, ok := c.Channels[channelID]
+	if !ok {
+		return fmt.Errorf("there is no channel with id %d in the server or it has not been fetched yet", channelID)
+	}
+
+	req := getChannelStreamRequest(msg)
+	if err := channel.Stream.Send(req); err != nil {
+		return fmt.Errorf("Failed to send request %v to the channel stream %v", req, channel.Stream)
+	}
+
+	return nil
 }
