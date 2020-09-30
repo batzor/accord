@@ -62,7 +62,7 @@ message GetChannelsResponse {
   message ChannelMeta {
     string name = 2;
     bool is_public = 3;
-    uint32 members_count = 4;
+    int32 members_count = 4;
   }
 
   map<fixed64, ChannelMeta> channel_metas = 1;
@@ -81,8 +81,8 @@ message GetChannelResponse {
   message ChannelInfo {
     fixed64 channel_id = 1;
     string name = 2;
-    repeated User users = 3;
-    uint64 pinned_msg = 4;
+    map<string, User> users = 3;
+    uint64 pinned_msg_id = 4;
     bool is_public = 5;
   }
 
@@ -199,6 +199,8 @@ message ChannelStreamResponse {
 service Chat {
   rpc AddChannel(AddChannelRequest) returns (AddChannelResponse) {}
   rpc RemoveChannel(RemoveChannelRequest) returns (RemoveChannelResponse) {}
+  rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
+  rpc GetChannel(GetChannelRequest) returns (GetChannelResponse) {}
 
   // Returns all the information about a particular channel.
   // rpc GetChannel(GetChannelRequest) returns (GetChannelResponse) {}

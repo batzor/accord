@@ -18,39 +18,40 @@ type channelUser struct {
 
 // ClientChannel represents a single private or public messaging channel.
 type ClientChannel struct {
-	ChannelID uint64
+	ChannelId uint64
 	Name      string
 	// Set if the **fixed** data for this channel has been fetched on the client side.
 	// Data that is mutable (and is frequently updated) such as pinned message, channel name,
 	// and messages, is not polled through "IsFetched".
 	IsFetched           bool
-	Users               map[string]*channelUser
-	PinnedMsgID         uint64
 	IsPublic            bool
+	PinnedMsgId         uint64
+	Users               map[string]Role
 	RolesWithPermission map[Permission][]Role
-	Messages            []Message
 	Stream              pb.Chat_ChannelStreamClient
+	Messages            []Message
 }
 
 // ServerChannel represents a single private or public messaging channel.
 type ServerChannel struct {
-	channelID uint64
+	channelId uint64
 	name      string
 	msgc      chan *pb.ChannelStreamRequest
 	// users contains general information about users in the channel
 	users map[string]*channelUser
 	// usersToStreams has only streams of users, which are streaming at the moment
 	usersToStreams      map[string]pb.Chat_ChannelStreamServer
-	pinnedMsgID         uint64
+	pinnedMsgId         uint64
 	isPublic            bool
 	rolesWithPermission map[Permission][]Role
 }
 
 // NewClientChannel creates a new client channel with provided parameters.
-func NewClientChannel(uid uint64, name string) *ClientChannel {
+func NewClientChannel(uid uint64, name string, isPublic bool) *ClientChannel {
 	return &ClientChannel{
-		ChannelID: uid,
+		ChannelId: uid,
 		Name:      name,
+		IsPublic:  isPublic,
 		IsFetched: false,
 	}
 }
@@ -58,11 +59,11 @@ func NewClientChannel(uid uint64, name string) *ClientChannel {
 // NewServerChannel creates a new server channel with provided parameters.
 func NewServerChannel(uid uint64, name string, isPublic bool) *ServerChannel {
 	return &ServerChannel{
-		channelID:           uid,
+		channelId:           uid,
 		name:                name,
 		msgc:                make(chan *pb.ChannelStreamRequest),
 		users:               make(map[string]*channelUser),
-		pinnedMsgID:         0,
+		pinnedMsgId:         0,
 		isPublic:            isPublic,
 		rolesWithPermission: make(map[Permission][]Role),
 	}
@@ -161,7 +162,7 @@ func (ch *ServerChannel) processChannelStreamRequestConfigMessage(m *pb.ChannelC
 		return nil, fmt.Errorf("user '%s' is not in the channel %s", roleMsg.GetUsername(), ch.name)
 	case *pb.ChannelConfigMessage_PinMsg:
 		pinMsg := m.GetPinMsg()
-		ch.pinnedMsgID = pinMsg.GetMessageId()
+		ch.pinnedMsgId = pinMsg.GetMessageId()
 		return m, nil
 	}
 	return nil, fmt.Errorf("Invalid object type: %v", reflect.TypeOf(m.GetMsg()))

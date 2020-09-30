@@ -86,11 +86,11 @@ func (s *AccordServer) AddChannel(ctx context.Context, req *pb.AddChannelRequest
 
 	// TODO: add the new channel to the DB.
 	// TODO: broadcast to ServerStream creation of new channel.
-	s.channels[ch.channelID] = ch
+	s.channels[ch.channelId] = ch
 	go ch.listen()
 
 	res := &pb.AddChannelResponse{
-		ChannelId: ch.channelID,
+		ChannelId: ch.channelId,
 	}
 	log.Printf("New Channel %s created", req.GetName())
 	return res, nil
@@ -99,17 +99,64 @@ func (s *AccordServer) AddChannel(ctx context.Context, req *pb.AddChannelRequest
 func (s *AccordServer) RemoveChannel(_ context.Context, req *pb.RemoveChannelRequest) (*pb.RemoveChannelResponse, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	channelID := req.GetChannelId()
+	channelId := req.GetChannelId()
 	if _, ok := s.channels[req.GetChannelId()]; ok {
 		// TODO: remove the record from the DB.
 		// TODO: broadcast to ServerStream removal of the channel.
 		delete(s.channels, req.GetChannelId())
 	} else {
-		return nil, status.Errorf(codes.InvalidArgument, "channel with ID %d doesn't exist", channelID)
+		return nil, status.Errorf(codes.InvalidArgument, "channel with Id %d doesn't exist", channelId)
 	}
 
 	res := &pb.RemoveChannelResponse{}
-	log.Printf("Channel with id %d has been removed\n", channelID)
+	log.Printf("Channel with id %d has been removed\n", channelId)
+	return res, nil
+}
+
+func (s *AccordServer) GetChannels(ctx context.Context, req *pb.GetChannelsRequest) (*pb.GetChannelsResponse, error) {
+	channel_metas := make(map[uint64]*pb.GetChannelsResponse_ChannelMeta)
+
+	for k := range s.channels {
+		meta := &pb.GetChannelsResponse_ChannelMeta{
+			Name:         s.channels[k].name,
+			IsPublic:     s.channels[k].isPublic,
+			MembersCount: int32(len(s.channels[k].users)),
+		}
+		channel_metas[k] = meta
+	}
+
+	res := &pb.GetChannelsResponse{
+		ChannelMetas: channel_metas,
+	}
+
+	return res, nil
+}
+
+func (s *AccordServer) GetChannel(ctx context.Context, req *pb.GetChannelRequest) (*pb.GetChannelResponse, error) {
+	channel, ok := s.channels[req.GetChannelId()]
+	if !ok {
+		return nil, status.Errorf(codes.InvalidArgument, "Channel with Id %d doesn't exist", req.GetChannelId())
+	}
+
+	users := make(map[string]*pb.GetChannelResponse_User)
+
+	for uname, user := range channel.users {
+		users[uname] = &pb.GetChannelResponse_User{
+			Username: uname,
+			Role:     int32(user.role),
+		}
+	}
+	info := &pb.GetChannelResponse_ChannelInfo{
+		ChannelId:   channel.channelId,
+		Name:        channel.name,
+		Users:       users,
+		PinnedMsgId: channel.pinnedMsgId,
+		IsPublic:    channel.isPublic,
+	}
+
+	res := &pb.GetChannelResponse{
+		Channel: info,
+	}
 	return res, nil
 }
 
@@ -136,7 +183,7 @@ func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
 		if channel == nil {
 			channel = s.channels[req.GetChannelId()]
 			if channel == nil {
-				return status.Errorf(codes.InvalidArgument, "invalid channel ID: %v", err)
+				return status.Errorf(codes.InvalidArgument, "invalid channel Id: %v", err)
 			}
 			// so far, authomatically add user as a member when he subscribes to the channel
 			// TODO: add some RPC for user to request to join the channel with particular role.
@@ -148,8 +195,8 @@ func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
 			}
 			// add the stream for broadcasting to the user
 			channel.usersToStreams[username] = srv
-		} else if reqChannelID := req.GetChannelId(); channel.channelID != reqChannelID {
-			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent channel IDs\nhave:%d\nwant:%d\n", reqChannelID, channel.channelID)
+		} else if reqChannelId := req.GetChannelId(); channel.channelId != reqChannelId {
+			return status.Errorf(codes.InvalidArgument, "each stream has to use consistent channel Ids\nhave:%d\nwant:%d\n", reqChannelId, channel.channelId)
 		}
 
 		select {

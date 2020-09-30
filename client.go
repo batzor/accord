@@ -96,12 +96,80 @@ func (c *AccordClient) RemoveChannel(channelID uint64) error {
 	req := &pb.RemoveChannelRequest{
 		ChannelId: channelID,
 	}
-	log.Println("Removing the channel...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	_, err := c.ChatClient.RemoveChannel(ctx, req)
 	return err
+}
+
+func (c *AccordClient) GetChannels() error {
+	if c.ChatClient == nil {
+		return fmt.Errorf("Login required")
+	}
+
+	req := &pb.GetChannelsRequest{}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res, err := c.ChatClient.GetChannels(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	metas := res.GetChannelMetas()
+	// Remove non-existing channels
+	for k := range c.Channels {
+		_, ok := metas[k]
+		if !ok {
+			delete(c.Channels, k)
+		}
+	}
+
+	// Update channel metadatas
+	for k, meta := range metas {
+		c.Channels[k] = NewClientChannel(k, meta.Name, meta.IsPublic)
+	}
+
+	return nil
+}
+
+func (c *AccordClient) GetChannel(channelID uint64) error {
+	if c.ChatClient == nil {
+		return fmt.Errorf("Login required")
+	}
+
+	req := &pb.GetChannelRequest{
+		ChannelId: channelID,
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res, err := c.ChatClient.GetChannel(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	data := res.GetChannel()
+	c.Channels[channelID].Name = data.GetName()
+	c.Channels[channelID].PinnedMsgId = data.GetPinnedMsgId()
+	c.Channels[channelID].IsPublic = data.GetIsPublic()
+
+	users := data.GetUsers()
+
+	// Remove non-existing users
+	for uname := range c.Channels[channelID].Users {
+		_, ok := users[uname]
+		if !ok {
+			delete(c.Channels[channelID].Users, uname)
+		}
+	}
+
+	for uname, user := range users {
+		c.Channels[channelID].Users[uname] = Role(user.GetRole())
+	}
+
+	return nil
 }
 
 func (c *AccordClient) Login(username string, password string) error {
