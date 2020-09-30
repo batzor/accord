@@ -32,7 +32,7 @@ type AccordClient struct {
 	pb.ChatClient
 	Username string
 	ServerID uint64
-	Channels []Channel
+	Channels []ClientChannel
 }
 
 func NewAccordClient(serverID uint64) *AccordClient {

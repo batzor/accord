@@ -26,7 +26,7 @@ type AccordServer struct {
 	authInterceptor *ServerAuthInterceptor
 	listener        net.Listener
 	mutex           sync.RWMutex
-	channels        map[uint64]*Channel
+	channels        map[uint64]*ServerChannel
 	jwtManager      *JWTManager
 }
 
@@ -35,7 +35,7 @@ func NewAccordServer() *AccordServer {
 	return &AccordServer{
 		authServer:      authServer,
 		authInterceptor: NewServerAuthInterceptor(authServer.JWTManager()),
-		channels:        make(map[uint64]*Channel),
+		channels:        make(map[uint64]*ServerChannel),
 		jwtManager:      NewJWTManager(secretKey, tokenDuration),
 	}
 }
@@ -78,7 +78,7 @@ func (s *AccordServer) AddChannel(ctx context.Context, req *pb.AddChannelRequest
 		return nil, status.Errorf(codes.InvalidArgument, "username cannot be empty")
 	}
 
-	ch := NewChannel(uint64(len(s.channels)), req.GetName(), req.GetIsPublic())
+	ch := NewServerChannel(uint64(len(s.channels)), req.GetName(), req.GetIsPublic())
 	ch.users[username] = &channelUser{
 		user: s.authServer.users[username],
 		role: SuperadminRole,
@@ -116,7 +116,7 @@ func (s *AccordServer) RemoveChannel(_ context.Context, req *pb.RemoveChannelReq
 // ChannelStream is the implementation of bidirectional streaming of client
 // with one channel on the server.
 func (s *AccordServer) ChannelStream(srv pb.Chat_ChannelStreamServer) error {
-	var channel *Channel = nil
+	var channel *ServerChannel = nil
 	ctx := srv.Context()
 
 	username, err := getUsernameFromContext(ctx)
