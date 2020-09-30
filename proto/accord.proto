@@ -56,21 +56,41 @@ message RemoveChannelRequest { fixed64 channel_id = 1; }
 
 message RemoveChannelResponse {}
 
-/*message GetChannelRequest { fixed64 channel_id = 1; }
+message GetChannelsRequest {}
+
+message GetChannelsResponse {
+  message ChannelMeta {
+    string name = 2;
+    bool is_public = 3;
+    uint32 members_count = 4;
+  }
+
+  map<fixed64, ChannelMeta> channel_metas = 1;
+}
+
+message GetChannelRequest {
+    fixed64 channel_id = 1;
+}
 
 message GetChannelResponse {
-  fixed64 channel_id = 1;
-  string name = 2;
-  bool isPublic = 3;
-  repeated User users = 4;
-  // and more to be added.
-
   message User {
-    TODO: ...
+    string username = 1;
+    int32 role = 2;
   }
-}*/
 
-/*message ServerStreamRequest { string username = 1; }
+  message ChannelInfo {
+    fixed64 channel_id = 1;
+    string name = 2;
+    repeated User users = 3;
+    uint64 pinned_msg = 4;
+    bool is_public = 5;
+  }
+
+  ChannelInfo channel = 1;
+}
+
+/*
+message ServerStreamRequest { string username = 1; }
 
 message ServerStreamResponse {
   oneof event {
@@ -102,7 +122,8 @@ message ServerStreamResponse {
   // This is a placeholder to be renamed for emerging needs for
   // server configuration changes.
   message AnyOtherServerConfigChange {}
-}*/
+}
+*/
 
 // Used in ChannelStreamRequest- and Response to initiate and broadcast
 // channel-related changes.
