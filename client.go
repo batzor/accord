@@ -132,6 +132,9 @@ func (c *AccordClient) Subscribe(channelID uint64) (*StreamResponseCommunication
 	if !ok {
 		return nil, fmt.Errorf("there is no channel with id %d in the server or it has not been fetched yet", channelID)
 	}
+	if !channel.IsFetched {
+		return nil, fmt.Errorf("channel with id %d has not been fetched yet", channelID)
+	}
 
 	// TODO: I think this needs to be reorganized.
 	// Current state: process one message and then wait until receiver reads it.
@@ -164,10 +167,13 @@ func (c *AccordClient) Subscribe(channelID uint64) (*StreamResponseCommunication
 	return resComm, nil
 }
 
-func (c *AccordClient) Send(channelID uint64, msg *ChannelStreamRequest) error {
-	channel, ok := c.Channels[channelID]
+func (c *AccordClient) Send(msg *ChannelStreamRequest) error {
+	channel, ok := c.Channels[msg.ChannelID]
 	if !ok {
-		return fmt.Errorf("there is no channel with id %d in the server or it has not been fetched yet", channelID)
+		return fmt.Errorf("there is no channel with id %d in the server or it has not been fetched yet", msg.ChannelID)
+	}
+	if !channel.IsFetched {
+		return fmt.Errorf("channel with id %d has not been fetched yet", msg.ChannelID)
 	}
 
 	req := getChannelStreamRequest(msg)
