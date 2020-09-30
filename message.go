@@ -4,6 +4,14 @@ import (
 	"time"
 )
 
+// Message is a single message in the chat
+type Message struct {
+	MessageID uint64
+	Timestamp time.Time
+	// TODO: add "Sender" field, denoting the user, who sent the message.
+	Content string
+}
+
 // ChannelConfigMessage is used in ChannelStreamRequest- and Response
 // to initiate and broadcast channel-related changes.
 type ChannelConfigMessage struct {
