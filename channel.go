@@ -20,8 +20,10 @@ type channelUser struct {
 type ClientChannel struct {
 	ChannelID uint64
 	Name      string
-	// Set if the data for this channel has been cached on the client side.
-	IsCached            bool
+	// Set if the **fixed** data for this channel has been fetched on the client side.
+	// Data that is mutable (and is frequently updated) such as pinned message, channel name,
+	// and messages, is not polled through "IsFetched".
+	IsFetched           bool
 	Users               map[string]*channelUser
 	PinnedMsgID         uint64
 	IsPublic            bool
@@ -44,7 +46,16 @@ type ServerChannel struct {
 	rolesWithPermission map[Permission][]Role
 }
 
-// NewServerChannel creates a new channel with provided parameters.
+// NewClientChannel creates a new client channel with provided parameters.
+func NewClientChannel(uid uint64, name string) *ClientChannel {
+	return &ClientChannel{
+		ChannelID: uid,
+		Name:      name,
+		IsFetched: false,
+	}
+}
+
+// NewServerChannel creates a new server channel with provided parameters.
 func NewServerChannel(uid uint64, name string, isPublic bool) *ServerChannel {
 	return &ServerChannel{
 		channelID:           uid,
