@@ -1,58 +1,222 @@
 syntax = "proto3";
 
-package Accord;
-option go_package=".;pb";
+package accord;
+option go_package = ".;pb";
 
 import "google/protobuf/timestamp.proto";
 
-message StreamRequest {
-    fixed64 channel_id = 1;
-    
-    oneof msg {
-        UserMessage user_msg = 2;
-        ConfMessage conf_msg = 3;
-    }
-
-    enum UserMsgType {
-        SEND_MSG = 0;
-        EDIT_MSG = 1;
-        DELETE_MSG = 2;
-    }
-
-    message UserMessage {
-        UserMsgType type = 1;
-        string content   = 2;
-    }
-
-    enum ConfMsgType {
-        EDIT_CHANNEL = 0;
-        EDIT_SERVER = 1;
-    }
-
-    message ConfMessage {
-        ConfMsgType type   = 1;
-        string placeholder = 2;
-    }
+// represents permissions within a single channel.
+enum Permission {
+  // default permission in case api user leaves this field empty
+  UNKNOWN_PERMISSION = 0;
+  // permission to read for subscribed users or any member of the channel
+  READ = 1;
+  // includes writing, modifying, and deletion of own messages
+  WRITE = 2;
+  // allows deleting othes users' messages
+  DELETE = 3;
+  // allows to modify channel configurations
+  MODIFY = 4;
+  // for kicking users out of the channel
+  KICK = 5;
+  // for banning users
+  BAN = 6;
+  // assignment of roles all channel's users
+  ASSIGN_ROLE = 7;
+  // permanently removing the channel and all its data
+  REMOVE_CHANNEL = 8;
 }
 
-message StreamResponse {
-    google.protobuf.Timestamp timestamp = 1;
+// represents roles within a single channel, each role may have
+// one or more permissions.
+enum Role {
+  // default role in case api user leaves this field empty
+  UNKNOWN_ROLE = 0;
+  // people who subscribed for reading messages from channel, but who
+  // cannot write messages or do anything else
+  SUBSCRIBER = 1;
+  // users who can read and write messages to the channel
+  MEMBER = 2;
+  // admins can delete others' messages and kick users out of channel
+  ADMIN = 3;
+  // superadmins, in addition to admins' permissions, can modify channel
+  // configs, ban users, and remove the channel. They can also assign roles
+  // to others. In case custom roles are added, they can customize them.
+  SUPERADMIN = 4;
+}
 
-    oneof event {
-        NewMessage new_msg  = 2;
-        UpdateMessage update_msg = 3;
+message AddChannelRequest {
+  string name = 1;
+  bool isPublic = 2;
+}
+
+message AddChannelResponse { fixed64 channel_id = 1; }
+
+message RemoveChannelRequest { fixed64 channel_id = 1; }
+
+message RemoveChannelResponse {}
+
+message GetChannelsRequest {}
+
+message GetChannelsResponse {
+  message ChannelMeta {
+    string name = 2;
+    bool is_public = 3;
+    int32 members_count = 4;
+  }
+
+  map<fixed64, ChannelMeta> channel_metas = 1;
+}
+
+message GetChannelRequest {
+    fixed64 channel_id = 1;
+}
+
+message GetChannelResponse {
+  message User {
+    string username = 1;
+    int32 role = 2;
+  }
+
+  message ChannelInfo {
+    fixed64 channel_id = 1;
+    string name = 2;
+    map<string, User> users = 3;
+    uint64 pinned_msg_id = 4;
+    bool is_public = 5;
+  }
+
+  ChannelInfo channel = 1;
+}
+
+/*
+message ServerStreamRequest { string username = 1; }
+
+message ServerStreamResponse {
+  oneof event {
+    ChannelAction channel_action = 1;
+    AnyOtherServerConfigChange any_other_server_config_change = 2;
+  }
+
+  // After users call unary rpc to add/remove channel, it gets
+  // broadcasted to all users (including the caller) through
+  // this message.
+  message ChannelAction {
+    fixed64 channel_id = 1;
+    oneof action {
+      // AddChannel is for broadcasting to users that a new channel
+      // has been added.
+      AddChannel add_channel = 2;
+      // Broadcasting to users that a channel has been removed.
+      RemoveChannel remove_channel = 3;
     }
 
-    message NewMessage {
-        fixed64 sender_id = 1;
-        string content    = 2;
+    message AddChannel {
+      string name = 1;
+      bool isPublic = 2;
     }
 
-    message UpdateMessage {
-        string placeholder = 1;
+    message RemoveChannel {}
+  }
+
+  // This is a placeholder to be renamed for emerging needs for
+  // server configuration changes.
+  message AnyOtherServerConfigChange {}
+}
+*/
+
+// Used in ChannelStreamRequest- and Response to initiate and broadcast
+// channel-related changes.
+message ChannelConfigMessage {
+  oneof msg {
+    NameChannelConfigMessage name_msg = 1;
+    RoleChannelConfigMessage role_msg = 2;
+    PinChannelConfigMessage pin_msg = 3;
+  }
+
+  message NameChannelConfigMessage { string new_channel_name = 1; }
+
+  message RoleChannelConfigMessage {
+    string username = 1;
+    Role role = 2;
+  }
+
+  message PinChannelConfigMessage { fixed64 message_id = 1; }
+}
+
+// Stream response for bidirectional streaming of user and  config
+// messages with a single channel.
+message ChannelStreamRequest {
+  fixed64 channel_id = 1;
+
+  oneof msg {
+    UserMessage user_msg = 2;
+    ChannelConfigMessage config_msg = 3;
+  }
+
+  message UserMessage {
+    oneof user_msg {
+      NewUserMessage new_user_msg = 1;
+      EditUserMessage edit_user_msg = 2;
+      DeleteUserMessage delete_user_msg = 3;
     }
+
+    message NewUserMessage { string content = 1; }
+
+    message EditUserMessage {
+      fixed64 message_id = 1;
+      string content = 2;
+    }
+
+    message DeleteUserMessage { fixed64 message_id = 1; }
+  }
+}
+
+// Stream response for bidirectional streaming of user and  config
+// messages with a single channel.
+message ChannelStreamResponse {
+  oneof msg {
+    UserMessage user_msg = 1;
+    ChannelConfigMessage config_msg = 2;
+  }
+
+  message UserMessage {
+    fixed64 message_id = 1;
+    oneof user_msg {
+      NewAndUpdateUserMessage new_and_update_user_msg = 2;
+      DeleteUserMessage delete_user_msg = 3;
+    }
+
+    message NewAndUpdateUserMessage {
+      google.protobuf.Timestamp timestamp = 1;
+      string content = 2;
+    }
+
+    message DeleteUserMessage {}
+  }
 }
 
 service Chat {
-    rpc Stream(stream StreamRequest) returns (stream StreamResponse) {}
+  rpc AddChannel(AddChannelRequest) returns (AddChannelResponse) {}
+  rpc RemoveChannel(RemoveChannelRequest) returns (RemoveChannelResponse) {}
+  rpc GetChannels(GetChannelsRequest) returns (GetChannelsResponse) {}
+  rpc GetChannel(GetChannelRequest) returns (GetChannelResponse) {}
+
+  // Returns all the information about a particular channel.
+  // rpc GetChannel(GetChannelRequest) returns (GetChannelResponse) {}
+
+  // Stream's server-scope information to user, such as addition or
+  // removal of channels, and change in other server configurations.
+  // rpc ServerStream(ServerStreamRequest) returns (stream ServerStreamResponse)
+  // {}
+
+  // Bidirectional stream of user and channel configuration messages
+  // with a single channel.
+  // NOTE: the fields and nested messages were designed with a single
+  // channel in mind. So while it may be possible to use this RPC to
+  // stream with multiple channels simultaneously, no adequate result
+  // should be expected. Thus, it is developer's responsibility to make
+  // sure that separate Stream RPCs are invoked for each channel.
+  rpc ChannelStream(stream ChannelStreamRequest)
+      returns (stream ChannelStreamResponse) {}
 }

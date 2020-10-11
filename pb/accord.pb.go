@@ -30,115 +30,159 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-type StreamRequest_UserMsgType int32
+// represents permissions within a single channel.
+type Permission int32
 
 const (
-	StreamRequest_SEND_MSG   StreamRequest_UserMsgType = 0
-	StreamRequest_EDIT_MSG   StreamRequest_UserMsgType = 1
-	StreamRequest_DELETE_MSG StreamRequest_UserMsgType = 2
+	// default permission in case api user leaves this field empty
+	Permission_UNKNOWN_PERMISSION Permission = 0
+	// permission to read for subscribed users or any member of the channel
+	Permission_READ Permission = 1
+	// includes writing, modifying, and deletion of own messages
+	Permission_WRITE Permission = 2
+	// allows deleting othes users' messages
+	Permission_DELETE Permission = 3
+	// allows to modify channel configurations
+	Permission_MODIFY Permission = 4
+	// for kicking users out of the channel
+	Permission_KICK Permission = 5
+	// for banning users
+	Permission_BAN Permission = 6
+	// assignment of roles all channel's users
+	Permission_ASSIGN_ROLE Permission = 7
+	// permanently removing the channel and all its data
+	Permission_REMOVE_CHANNEL Permission = 8
 )
 
-// Enum value maps for StreamRequest_UserMsgType.
+// Enum value maps for Permission.
 var (
-	StreamRequest_UserMsgType_name = map[int32]string{
-		0: "SEND_MSG",
-		1: "EDIT_MSG",
-		2: "DELETE_MSG",
+	Permission_name = map[int32]string{
+		0: "UNKNOWN_PERMISSION",
+		1: "READ",
+		2: "WRITE",
+		3: "DELETE",
+		4: "MODIFY",
+		5: "KICK",
+		6: "BAN",
+		7: "ASSIGN_ROLE",
+		8: "REMOVE_CHANNEL",
 	}
-	StreamRequest_UserMsgType_value = map[string]int32{
-		"SEND_MSG":   0,
-		"EDIT_MSG":   1,
-		"DELETE_MSG": 2,
+	Permission_value = map[string]int32{
+		"UNKNOWN_PERMISSION": 0,
+		"READ":               1,
+		"WRITE":              2,
+		"DELETE":             3,
+		"MODIFY":             4,
+		"KICK":               5,
+		"BAN":                6,
+		"ASSIGN_ROLE":        7,
+		"REMOVE_CHANNEL":     8,
 	}
 )
 
-func (x StreamRequest_UserMsgType) Enum() *StreamRequest_UserMsgType {
-	p := new(StreamRequest_UserMsgType)
+func (x Permission) Enum() *Permission {
+	p := new(Permission)
 	*p = x
 	return p
 }
 
-func (x StreamRequest_UserMsgType) String() string {
+func (x Permission) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (StreamRequest_UserMsgType) Descriptor() protoreflect.EnumDescriptor {
+func (Permission) Descriptor() protoreflect.EnumDescriptor {
 	return file_accord_proto_enumTypes[0].Descriptor()
 }
 
-func (StreamRequest_UserMsgType) Type() protoreflect.EnumType {
+func (Permission) Type() protoreflect.EnumType {
 	return &file_accord_proto_enumTypes[0]
 }
 
-func (x StreamRequest_UserMsgType) Number() protoreflect.EnumNumber {
+func (x Permission) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use StreamRequest_UserMsgType.Descriptor instead.
-func (StreamRequest_UserMsgType) EnumDescriptor() ([]byte, []int) {
-	return file_accord_proto_rawDescGZIP(), []int{0, 0}
+// Deprecated: Use Permission.Descriptor instead.
+func (Permission) EnumDescriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{0}
 }
 
-type StreamRequest_ConfMsgType int32
+// represents roles within a single channel, each role may have
+// one or more permissions.
+type Role int32
 
 const (
-	StreamRequest_EDIT_CHANNEL StreamRequest_ConfMsgType = 0
-	StreamRequest_EDIT_SERVER  StreamRequest_ConfMsgType = 1
+	// default role in case api user leaves this field empty
+	Role_UNKNOWN_ROLE Role = 0
+	// people who subscribed for reading messages from channel, but who
+	// cannot write messages or do anything else
+	Role_SUBSCRIBER Role = 1
+	// users who can read and write messages to the channel
+	Role_MEMBER Role = 2
+	// admins can delete others' messages and kick users out of channel
+	Role_ADMIN Role = 3
+	// superadmins, in addition to admins' permissions, can modify channel
+	// configs, ban users, and remove the channel. They can also assign roles
+	// to others. In case custom roles are added, they can customize them.
+	Role_SUPERADMIN Role = 4
 )
 
-// Enum value maps for StreamRequest_ConfMsgType.
+// Enum value maps for Role.
 var (
-	StreamRequest_ConfMsgType_name = map[int32]string{
-		0: "EDIT_CHANNEL",
-		1: "EDIT_SERVER",
+	Role_name = map[int32]string{
+		0: "UNKNOWN_ROLE",
+		1: "SUBSCRIBER",
+		2: "MEMBER",
+		3: "ADMIN",
+		4: "SUPERADMIN",
 	}
-	StreamRequest_ConfMsgType_value = map[string]int32{
-		"EDIT_CHANNEL": 0,
-		"EDIT_SERVER":  1,
+	Role_value = map[string]int32{
+		"UNKNOWN_ROLE": 0,
+		"SUBSCRIBER":   1,
+		"MEMBER":       2,
+		"ADMIN":        3,
+		"SUPERADMIN":   4,
 	}
 )
 
-func (x StreamRequest_ConfMsgType) Enum() *StreamRequest_ConfMsgType {
-	p := new(StreamRequest_ConfMsgType)
+func (x Role) Enum() *Role {
+	p := new(Role)
 	*p = x
 	return p
 }
 
-func (x StreamRequest_ConfMsgType) String() string {
+func (x Role) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (StreamRequest_ConfMsgType) Descriptor() protoreflect.EnumDescriptor {
+func (Role) Descriptor() protoreflect.EnumDescriptor {
 	return file_accord_proto_enumTypes[1].Descriptor()
 }
 
-func (StreamRequest_ConfMsgType) Type() protoreflect.EnumType {
+func (Role) Type() protoreflect.EnumType {
 	return &file_accord_proto_enumTypes[1]
 }
 
-func (x StreamRequest_ConfMsgType) Number() protoreflect.EnumNumber {
+func (x Role) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use StreamRequest_ConfMsgType.Descriptor instead.
-func (StreamRequest_ConfMsgType) EnumDescriptor() ([]byte, []int) {
-	return file_accord_proto_rawDescGZIP(), []int{0, 1}
+// Deprecated: Use Role.Descriptor instead.
+func (Role) EnumDescriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{1}
 }
 
-type StreamRequest struct {
+type AddChannelRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ChannelId uint64 `protobuf:"fixed64,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	// Types that are assignable to Msg:
-	//	*StreamRequest_UserMsg
-	//	*StreamRequest_ConfMsg
-	Msg isStreamRequest_Msg `protobuf_oneof:"msg"`
+	Name     string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	IsPublic bool   `protobuf:"varint,2,opt,name=isPublic,proto3" json:"isPublic,omitempty"`
 }
 
-func (x *StreamRequest) Reset() {
-	*x = StreamRequest{}
+func (x *AddChannelRequest) Reset() {
+	*x = AddChannelRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_accord_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -146,13 +190,13 @@ func (x *StreamRequest) Reset() {
 	}
 }
 
-func (x *StreamRequest) String() string {
+func (x *AddChannelRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StreamRequest) ProtoMessage() {}
+func (*AddChannelRequest) ProtoMessage() {}
 
-func (x *StreamRequest) ProtoReflect() protoreflect.Message {
+func (x *AddChannelRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_accord_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -164,69 +208,35 @@ func (x *StreamRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StreamRequest.ProtoReflect.Descriptor instead.
-func (*StreamRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use AddChannelRequest.ProtoReflect.Descriptor instead.
+func (*AddChannelRequest) Descriptor() ([]byte, []int) {
 	return file_accord_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *StreamRequest) GetChannelId() uint64 {
+func (x *AddChannelRequest) GetName() string {
 	if x != nil {
-		return x.ChannelId
+		return x.Name
 	}
-	return 0
+	return ""
 }
 
-func (m *StreamRequest) GetMsg() isStreamRequest_Msg {
-	if m != nil {
-		return m.Msg
+func (x *AddChannelRequest) GetIsPublic() bool {
+	if x != nil {
+		return x.IsPublic
 	}
-	return nil
+	return false
 }
 
-func (x *StreamRequest) GetUserMsg() *StreamRequest_UserMessage {
-	if x, ok := x.GetMsg().(*StreamRequest_UserMsg); ok {
-		return x.UserMsg
-	}
-	return nil
-}
-
-func (x *StreamRequest) GetConfMsg() *StreamRequest_ConfMessage {
-	if x, ok := x.GetMsg().(*StreamRequest_ConfMsg); ok {
-		return x.ConfMsg
-	}
-	return nil
-}
-
-type isStreamRequest_Msg interface {
-	isStreamRequest_Msg()
-}
-
-type StreamRequest_UserMsg struct {
-	UserMsg *StreamRequest_UserMessage `protobuf:"bytes,2,opt,name=user_msg,json=userMsg,proto3,oneof"`
-}
-
-type StreamRequest_ConfMsg struct {
-	ConfMsg *StreamRequest_ConfMessage `protobuf:"bytes,3,opt,name=conf_msg,json=confMsg,proto3,oneof"`
-}
-
-func (*StreamRequest_UserMsg) isStreamRequest_Msg() {}
-
-func (*StreamRequest_ConfMsg) isStreamRequest_Msg() {}
-
-type StreamResponse struct {
+type AddChannelResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Timestamp *timestamp.Timestamp `protobuf:"bytes,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// Types that are assignable to Event:
-	//	*StreamResponse_NewMsg
-	//	*StreamResponse_UpdateMsg
-	Event isStreamResponse_Event `protobuf_oneof:"event"`
+	ChannelId uint64 `protobuf:"fixed64,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 }
 
-func (x *StreamResponse) Reset() {
-	*x = StreamResponse{}
+func (x *AddChannelResponse) Reset() {
+	*x = AddChannelResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_accord_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -234,13 +244,13 @@ func (x *StreamResponse) Reset() {
 	}
 }
 
-func (x *StreamResponse) String() string {
+func (x *AddChannelResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StreamResponse) ProtoMessage() {}
+func (*AddChannelResponse) ProtoMessage() {}
 
-func (x *StreamResponse) ProtoReflect() protoreflect.Message {
+func (x *AddChannelResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_accord_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -252,66 +262,28 @@ func (x *StreamResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StreamResponse.ProtoReflect.Descriptor instead.
-func (*StreamResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use AddChannelResponse.ProtoReflect.Descriptor instead.
+func (*AddChannelResponse) Descriptor() ([]byte, []int) {
 	return file_accord_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *StreamResponse) GetTimestamp() *timestamp.Timestamp {
+func (x *AddChannelResponse) GetChannelId() uint64 {
 	if x != nil {
-		return x.Timestamp
+		return x.ChannelId
 	}
-	return nil
+	return 0
 }
 
-func (m *StreamResponse) GetEvent() isStreamResponse_Event {
-	if m != nil {
-		return m.Event
-	}
-	return nil
-}
-
-func (x *StreamResponse) GetNewMsg() *StreamResponse_NewMessage {
-	if x, ok := x.GetEvent().(*StreamResponse_NewMsg); ok {
-		return x.NewMsg
-	}
-	return nil
-}
-
-func (x *StreamResponse) GetUpdateMsg() *StreamResponse_UpdateMessage {
-	if x, ok := x.GetEvent().(*StreamResponse_UpdateMsg); ok {
-		return x.UpdateMsg
-	}
-	return nil
-}
-
-type isStreamResponse_Event interface {
-	isStreamResponse_Event()
-}
-
-type StreamResponse_NewMsg struct {
-	NewMsg *StreamResponse_NewMessage `protobuf:"bytes,2,opt,name=new_msg,json=newMsg,proto3,oneof"`
-}
-
-type StreamResponse_UpdateMsg struct {
-	UpdateMsg *StreamResponse_UpdateMessage `protobuf:"bytes,3,opt,name=update_msg,json=updateMsg,proto3,oneof"`
-}
-
-func (*StreamResponse_NewMsg) isStreamResponse_Event() {}
-
-func (*StreamResponse_UpdateMsg) isStreamResponse_Event() {}
-
-type StreamRequest_UserMessage struct {
+type RemoveChannelRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Type    StreamRequest_UserMsgType `protobuf:"varint,1,opt,name=type,proto3,enum=Accord.StreamRequest_UserMsgType" json:"type,omitempty"`
-	Content string                    `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	ChannelId uint64 `protobuf:"fixed64,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 }
 
-func (x *StreamRequest_UserMessage) Reset() {
-	*x = StreamRequest_UserMessage{}
+func (x *RemoveChannelRequest) Reset() {
+	*x = RemoveChannelRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_accord_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -319,13 +291,13 @@ func (x *StreamRequest_UserMessage) Reset() {
 	}
 }
 
-func (x *StreamRequest_UserMessage) String() string {
+func (x *RemoveChannelRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StreamRequest_UserMessage) ProtoMessage() {}
+func (*RemoveChannelRequest) ProtoMessage() {}
 
-func (x *StreamRequest_UserMessage) ProtoReflect() protoreflect.Message {
+func (x *RemoveChannelRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_accord_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -337,36 +309,26 @@ func (x *StreamRequest_UserMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StreamRequest_UserMessage.ProtoReflect.Descriptor instead.
-func (*StreamRequest_UserMessage) Descriptor() ([]byte, []int) {
-	return file_accord_proto_rawDescGZIP(), []int{0, 0}
+// Deprecated: Use RemoveChannelRequest.ProtoReflect.Descriptor instead.
+func (*RemoveChannelRequest) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *StreamRequest_UserMessage) GetType() StreamRequest_UserMsgType {
+func (x *RemoveChannelRequest) GetChannelId() uint64 {
 	if x != nil {
-		return x.Type
+		return x.ChannelId
 	}
-	return StreamRequest_SEND_MSG
+	return 0
 }
 
-func (x *StreamRequest_UserMessage) GetContent() string {
-	if x != nil {
-		return x.Content
-	}
-	return ""
-}
-
-type StreamRequest_ConfMessage struct {
+type RemoveChannelResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Type        StreamRequest_ConfMsgType `protobuf:"varint,1,opt,name=type,proto3,enum=Accord.StreamRequest_ConfMsgType" json:"type,omitempty"`
-	Placeholder string                    `protobuf:"bytes,2,opt,name=placeholder,proto3" json:"placeholder,omitempty"`
 }
 
-func (x *StreamRequest_ConfMessage) Reset() {
-	*x = StreamRequest_ConfMessage{}
+func (x *RemoveChannelResponse) Reset() {
+	*x = RemoveChannelResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_accord_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -374,13 +336,13 @@ func (x *StreamRequest_ConfMessage) Reset() {
 	}
 }
 
-func (x *StreamRequest_ConfMessage) String() string {
+func (x *RemoveChannelResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StreamRequest_ConfMessage) ProtoMessage() {}
+func (*RemoveChannelResponse) ProtoMessage() {}
 
-func (x *StreamRequest_ConfMessage) ProtoReflect() protoreflect.Message {
+func (x *RemoveChannelResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_accord_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -392,36 +354,19 @@ func (x *StreamRequest_ConfMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StreamRequest_ConfMessage.ProtoReflect.Descriptor instead.
-func (*StreamRequest_ConfMessage) Descriptor() ([]byte, []int) {
-	return file_accord_proto_rawDescGZIP(), []int{0, 1}
+// Deprecated: Use RemoveChannelResponse.ProtoReflect.Descriptor instead.
+func (*RemoveChannelResponse) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *StreamRequest_ConfMessage) GetType() StreamRequest_ConfMsgType {
-	if x != nil {
-		return x.Type
-	}
-	return StreamRequest_EDIT_CHANNEL
-}
-
-func (x *StreamRequest_ConfMessage) GetPlaceholder() string {
-	if x != nil {
-		return x.Placeholder
-	}
-	return ""
-}
-
-type StreamResponse_NewMessage struct {
+type GetChannelsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	SenderId uint64 `protobuf:"fixed64,1,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`
-	Content  string `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 }
 
-func (x *StreamResponse_NewMessage) Reset() {
-	*x = StreamResponse_NewMessage{}
+func (x *GetChannelsRequest) Reset() {
+	*x = GetChannelsRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_accord_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -429,13 +374,13 @@ func (x *StreamResponse_NewMessage) Reset() {
 	}
 }
 
-func (x *StreamResponse_NewMessage) String() string {
+func (x *GetChannelsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StreamResponse_NewMessage) ProtoMessage() {}
+func (*GetChannelsRequest) ProtoMessage() {}
 
-func (x *StreamResponse_NewMessage) ProtoReflect() protoreflect.Message {
+func (x *GetChannelsRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_accord_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -447,35 +392,21 @@ func (x *StreamResponse_NewMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StreamResponse_NewMessage.ProtoReflect.Descriptor instead.
-func (*StreamResponse_NewMessage) Descriptor() ([]byte, []int) {
-	return file_accord_proto_rawDescGZIP(), []int{1, 0}
+// Deprecated: Use GetChannelsRequest.ProtoReflect.Descriptor instead.
+func (*GetChannelsRequest) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *StreamResponse_NewMessage) GetSenderId() uint64 {
-	if x != nil {
-		return x.SenderId
-	}
-	return 0
-}
-
-func (x *StreamResponse_NewMessage) GetContent() string {
-	if x != nil {
-		return x.Content
-	}
-	return ""
-}
-
-type StreamResponse_UpdateMessage struct {
+type GetChannelsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Placeholder string `protobuf:"bytes,1,opt,name=placeholder,proto3" json:"placeholder,omitempty"`
+	ChannelMetas map[uint64]*GetChannelsResponse_ChannelMeta `protobuf:"bytes,1,rep,name=channel_metas,json=channelMetas,proto3" json:"channel_metas,omitempty" protobuf_key:"fixed64,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
-func (x *StreamResponse_UpdateMessage) Reset() {
-	*x = StreamResponse_UpdateMessage{}
+func (x *GetChannelsResponse) Reset() {
+	*x = GetChannelsResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_accord_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -483,13 +414,13 @@ func (x *StreamResponse_UpdateMessage) Reset() {
 	}
 }
 
-func (x *StreamResponse_UpdateMessage) String() string {
+func (x *GetChannelsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StreamResponse_UpdateMessage) ProtoMessage() {}
+func (*GetChannelsResponse) ProtoMessage() {}
 
-func (x *StreamResponse_UpdateMessage) ProtoReflect() protoreflect.Message {
+func (x *GetChannelsResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_accord_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -501,82 +432,1373 @@ func (x *StreamResponse_UpdateMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StreamResponse_UpdateMessage.ProtoReflect.Descriptor instead.
-func (*StreamResponse_UpdateMessage) Descriptor() ([]byte, []int) {
-	return file_accord_proto_rawDescGZIP(), []int{1, 1}
+// Deprecated: Use GetChannelsResponse.ProtoReflect.Descriptor instead.
+func (*GetChannelsResponse) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *StreamResponse_UpdateMessage) GetPlaceholder() string {
+func (x *GetChannelsResponse) GetChannelMetas() map[uint64]*GetChannelsResponse_ChannelMeta {
 	if x != nil {
-		return x.Placeholder
+		return x.ChannelMetas
+	}
+	return nil
+}
+
+type GetChannelRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ChannelId uint64 `protobuf:"fixed64,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+}
+
+func (x *GetChannelRequest) Reset() {
+	*x = GetChannelRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetChannelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChannelRequest) ProtoMessage() {}
+
+func (x *GetChannelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChannelRequest.ProtoReflect.Descriptor instead.
+func (*GetChannelRequest) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetChannelRequest) GetChannelId() uint64 {
+	if x != nil {
+		return x.ChannelId
+	}
+	return 0
+}
+
+type GetChannelResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Channel *GetChannelResponse_ChannelInfo `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty"`
+}
+
+func (x *GetChannelResponse) Reset() {
+	*x = GetChannelResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetChannelResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChannelResponse) ProtoMessage() {}
+
+func (x *GetChannelResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChannelResponse.ProtoReflect.Descriptor instead.
+func (*GetChannelResponse) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetChannelResponse) GetChannel() *GetChannelResponse_ChannelInfo {
+	if x != nil {
+		return x.Channel
+	}
+	return nil
+}
+
+// Used in ChannelStreamRequest- and Response to initiate and broadcast
+// channel-related changes.
+type ChannelConfigMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Msg:
+	//	*ChannelConfigMessage_NameMsg
+	//	*ChannelConfigMessage_RoleMsg
+	//	*ChannelConfigMessage_PinMsg
+	Msg isChannelConfigMessage_Msg `protobuf_oneof:"msg"`
+}
+
+func (x *ChannelConfigMessage) Reset() {
+	*x = ChannelConfigMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelConfigMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelConfigMessage) ProtoMessage() {}
+
+func (x *ChannelConfigMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelConfigMessage.ProtoReflect.Descriptor instead.
+func (*ChannelConfigMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{8}
+}
+
+func (m *ChannelConfigMessage) GetMsg() isChannelConfigMessage_Msg {
+	if m != nil {
+		return m.Msg
+	}
+	return nil
+}
+
+func (x *ChannelConfigMessage) GetNameMsg() *ChannelConfigMessage_NameChannelConfigMessage {
+	if x, ok := x.GetMsg().(*ChannelConfigMessage_NameMsg); ok {
+		return x.NameMsg
+	}
+	return nil
+}
+
+func (x *ChannelConfigMessage) GetRoleMsg() *ChannelConfigMessage_RoleChannelConfigMessage {
+	if x, ok := x.GetMsg().(*ChannelConfigMessage_RoleMsg); ok {
+		return x.RoleMsg
+	}
+	return nil
+}
+
+func (x *ChannelConfigMessage) GetPinMsg() *ChannelConfigMessage_PinChannelConfigMessage {
+	if x, ok := x.GetMsg().(*ChannelConfigMessage_PinMsg); ok {
+		return x.PinMsg
+	}
+	return nil
+}
+
+type isChannelConfigMessage_Msg interface {
+	isChannelConfigMessage_Msg()
+}
+
+type ChannelConfigMessage_NameMsg struct {
+	NameMsg *ChannelConfigMessage_NameChannelConfigMessage `protobuf:"bytes,1,opt,name=name_msg,json=nameMsg,proto3,oneof"`
+}
+
+type ChannelConfigMessage_RoleMsg struct {
+	RoleMsg *ChannelConfigMessage_RoleChannelConfigMessage `protobuf:"bytes,2,opt,name=role_msg,json=roleMsg,proto3,oneof"`
+}
+
+type ChannelConfigMessage_PinMsg struct {
+	PinMsg *ChannelConfigMessage_PinChannelConfigMessage `protobuf:"bytes,3,opt,name=pin_msg,json=pinMsg,proto3,oneof"`
+}
+
+func (*ChannelConfigMessage_NameMsg) isChannelConfigMessage_Msg() {}
+
+func (*ChannelConfigMessage_RoleMsg) isChannelConfigMessage_Msg() {}
+
+func (*ChannelConfigMessage_PinMsg) isChannelConfigMessage_Msg() {}
+
+// Stream response for bidirectional streaming of user and  config
+// messages with a single channel.
+type ChannelStreamRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ChannelId uint64 `protobuf:"fixed64,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	// Types that are assignable to Msg:
+	//	*ChannelStreamRequest_UserMsg
+	//	*ChannelStreamRequest_ConfigMsg
+	Msg isChannelStreamRequest_Msg `protobuf_oneof:"msg"`
+}
+
+func (x *ChannelStreamRequest) Reset() {
+	*x = ChannelStreamRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamRequest) ProtoMessage() {}
+
+func (x *ChannelStreamRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamRequest.ProtoReflect.Descriptor instead.
+func (*ChannelStreamRequest) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ChannelStreamRequest) GetChannelId() uint64 {
+	if x != nil {
+		return x.ChannelId
+	}
+	return 0
+}
+
+func (m *ChannelStreamRequest) GetMsg() isChannelStreamRequest_Msg {
+	if m != nil {
+		return m.Msg
+	}
+	return nil
+}
+
+func (x *ChannelStreamRequest) GetUserMsg() *ChannelStreamRequest_UserMessage {
+	if x, ok := x.GetMsg().(*ChannelStreamRequest_UserMsg); ok {
+		return x.UserMsg
+	}
+	return nil
+}
+
+func (x *ChannelStreamRequest) GetConfigMsg() *ChannelConfigMessage {
+	if x, ok := x.GetMsg().(*ChannelStreamRequest_ConfigMsg); ok {
+		return x.ConfigMsg
+	}
+	return nil
+}
+
+type isChannelStreamRequest_Msg interface {
+	isChannelStreamRequest_Msg()
+}
+
+type ChannelStreamRequest_UserMsg struct {
+	UserMsg *ChannelStreamRequest_UserMessage `protobuf:"bytes,2,opt,name=user_msg,json=userMsg,proto3,oneof"`
+}
+
+type ChannelStreamRequest_ConfigMsg struct {
+	ConfigMsg *ChannelConfigMessage `protobuf:"bytes,3,opt,name=config_msg,json=configMsg,proto3,oneof"`
+}
+
+func (*ChannelStreamRequest_UserMsg) isChannelStreamRequest_Msg() {}
+
+func (*ChannelStreamRequest_ConfigMsg) isChannelStreamRequest_Msg() {}
+
+// Stream response for bidirectional streaming of user and  config
+// messages with a single channel.
+type ChannelStreamResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Msg:
+	//	*ChannelStreamResponse_UserMsg
+	//	*ChannelStreamResponse_ConfigMsg
+	Msg isChannelStreamResponse_Msg `protobuf_oneof:"msg"`
+}
+
+func (x *ChannelStreamResponse) Reset() {
+	*x = ChannelStreamResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamResponse) ProtoMessage() {}
+
+func (x *ChannelStreamResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamResponse.ProtoReflect.Descriptor instead.
+func (*ChannelStreamResponse) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{10}
+}
+
+func (m *ChannelStreamResponse) GetMsg() isChannelStreamResponse_Msg {
+	if m != nil {
+		return m.Msg
+	}
+	return nil
+}
+
+func (x *ChannelStreamResponse) GetUserMsg() *ChannelStreamResponse_UserMessage {
+	if x, ok := x.GetMsg().(*ChannelStreamResponse_UserMsg); ok {
+		return x.UserMsg
+	}
+	return nil
+}
+
+func (x *ChannelStreamResponse) GetConfigMsg() *ChannelConfigMessage {
+	if x, ok := x.GetMsg().(*ChannelStreamResponse_ConfigMsg); ok {
+		return x.ConfigMsg
+	}
+	return nil
+}
+
+type isChannelStreamResponse_Msg interface {
+	isChannelStreamResponse_Msg()
+}
+
+type ChannelStreamResponse_UserMsg struct {
+	UserMsg *ChannelStreamResponse_UserMessage `protobuf:"bytes,1,opt,name=user_msg,json=userMsg,proto3,oneof"`
+}
+
+type ChannelStreamResponse_ConfigMsg struct {
+	ConfigMsg *ChannelConfigMessage `protobuf:"bytes,2,opt,name=config_msg,json=configMsg,proto3,oneof"`
+}
+
+func (*ChannelStreamResponse_UserMsg) isChannelStreamResponse_Msg() {}
+
+func (*ChannelStreamResponse_ConfigMsg) isChannelStreamResponse_Msg() {}
+
+type GetChannelsResponse_ChannelMeta struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name         string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	IsPublic     bool   `protobuf:"varint,3,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
+	MembersCount int32  `protobuf:"varint,4,opt,name=members_count,json=membersCount,proto3" json:"members_count,omitempty"`
+}
+
+func (x *GetChannelsResponse_ChannelMeta) Reset() {
+	*x = GetChannelsResponse_ChannelMeta{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetChannelsResponse_ChannelMeta) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChannelsResponse_ChannelMeta) ProtoMessage() {}
+
+func (x *GetChannelsResponse_ChannelMeta) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChannelsResponse_ChannelMeta.ProtoReflect.Descriptor instead.
+func (*GetChannelsResponse_ChannelMeta) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{5, 0}
+}
+
+func (x *GetChannelsResponse_ChannelMeta) GetName() string {
+	if x != nil {
+		return x.Name
 	}
 	return ""
+}
+
+func (x *GetChannelsResponse_ChannelMeta) GetIsPublic() bool {
+	if x != nil {
+		return x.IsPublic
+	}
+	return false
+}
+
+func (x *GetChannelsResponse_ChannelMeta) GetMembersCount() int32 {
+	if x != nil {
+		return x.MembersCount
+	}
+	return 0
+}
+
+type GetChannelResponse_User struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Role     int32  `protobuf:"varint,2,opt,name=role,proto3" json:"role,omitempty"`
+}
+
+func (x *GetChannelResponse_User) Reset() {
+	*x = GetChannelResponse_User{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetChannelResponse_User) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChannelResponse_User) ProtoMessage() {}
+
+func (x *GetChannelResponse_User) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChannelResponse_User.ProtoReflect.Descriptor instead.
+func (*GetChannelResponse_User) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{7, 0}
+}
+
+func (x *GetChannelResponse_User) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *GetChannelResponse_User) GetRole() int32 {
+	if x != nil {
+		return x.Role
+	}
+	return 0
+}
+
+type GetChannelResponse_ChannelInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ChannelId   uint64                              `protobuf:"fixed64,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	Name        string                              `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Users       map[string]*GetChannelResponse_User `protobuf:"bytes,3,rep,name=users,proto3" json:"users,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	PinnedMsgId uint64                              `protobuf:"varint,4,opt,name=pinned_msg_id,json=pinnedMsgId,proto3" json:"pinned_msg_id,omitempty"`
+	IsPublic    bool                                `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
+}
+
+func (x *GetChannelResponse_ChannelInfo) Reset() {
+	*x = GetChannelResponse_ChannelInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetChannelResponse_ChannelInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChannelResponse_ChannelInfo) ProtoMessage() {}
+
+func (x *GetChannelResponse_ChannelInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChannelResponse_ChannelInfo.ProtoReflect.Descriptor instead.
+func (*GetChannelResponse_ChannelInfo) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{7, 1}
+}
+
+func (x *GetChannelResponse_ChannelInfo) GetChannelId() uint64 {
+	if x != nil {
+		return x.ChannelId
+	}
+	return 0
+}
+
+func (x *GetChannelResponse_ChannelInfo) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *GetChannelResponse_ChannelInfo) GetUsers() map[string]*GetChannelResponse_User {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
+func (x *GetChannelResponse_ChannelInfo) GetPinnedMsgId() uint64 {
+	if x != nil {
+		return x.PinnedMsgId
+	}
+	return 0
+}
+
+func (x *GetChannelResponse_ChannelInfo) GetIsPublic() bool {
+	if x != nil {
+		return x.IsPublic
+	}
+	return false
+}
+
+type ChannelConfigMessage_NameChannelConfigMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NewChannelName string `protobuf:"bytes,1,opt,name=new_channel_name,json=newChannelName,proto3" json:"new_channel_name,omitempty"`
+}
+
+func (x *ChannelConfigMessage_NameChannelConfigMessage) Reset() {
+	*x = ChannelConfigMessage_NameChannelConfigMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelConfigMessage_NameChannelConfigMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelConfigMessage_NameChannelConfigMessage) ProtoMessage() {}
+
+func (x *ChannelConfigMessage_NameChannelConfigMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelConfigMessage_NameChannelConfigMessage.ProtoReflect.Descriptor instead.
+func (*ChannelConfigMessage_NameChannelConfigMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{8, 0}
+}
+
+func (x *ChannelConfigMessage_NameChannelConfigMessage) GetNewChannelName() string {
+	if x != nil {
+		return x.NewChannelName
+	}
+	return ""
+}
+
+type ChannelConfigMessage_RoleChannelConfigMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Role     Role   `protobuf:"varint,2,opt,name=role,proto3,enum=accord.Role" json:"role,omitempty"`
+}
+
+func (x *ChannelConfigMessage_RoleChannelConfigMessage) Reset() {
+	*x = ChannelConfigMessage_RoleChannelConfigMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelConfigMessage_RoleChannelConfigMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelConfigMessage_RoleChannelConfigMessage) ProtoMessage() {}
+
+func (x *ChannelConfigMessage_RoleChannelConfigMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelConfigMessage_RoleChannelConfigMessage.ProtoReflect.Descriptor instead.
+func (*ChannelConfigMessage_RoleChannelConfigMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{8, 1}
+}
+
+func (x *ChannelConfigMessage_RoleChannelConfigMessage) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *ChannelConfigMessage_RoleChannelConfigMessage) GetRole() Role {
+	if x != nil {
+		return x.Role
+	}
+	return Role_UNKNOWN_ROLE
+}
+
+type ChannelConfigMessage_PinChannelConfigMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	MessageId uint64 `protobuf:"fixed64,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+}
+
+func (x *ChannelConfigMessage_PinChannelConfigMessage) Reset() {
+	*x = ChannelConfigMessage_PinChannelConfigMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelConfigMessage_PinChannelConfigMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelConfigMessage_PinChannelConfigMessage) ProtoMessage() {}
+
+func (x *ChannelConfigMessage_PinChannelConfigMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelConfigMessage_PinChannelConfigMessage.ProtoReflect.Descriptor instead.
+func (*ChannelConfigMessage_PinChannelConfigMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{8, 2}
+}
+
+func (x *ChannelConfigMessage_PinChannelConfigMessage) GetMessageId() uint64 {
+	if x != nil {
+		return x.MessageId
+	}
+	return 0
+}
+
+type ChannelStreamRequest_UserMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to UserMsg:
+	//	*ChannelStreamRequest_UserMessage_NewUserMsg
+	//	*ChannelStreamRequest_UserMessage_EditUserMsg
+	//	*ChannelStreamRequest_UserMessage_DeleteUserMsg
+	UserMsg isChannelStreamRequest_UserMessage_UserMsg `protobuf_oneof:"user_msg"`
+}
+
+func (x *ChannelStreamRequest_UserMessage) Reset() {
+	*x = ChannelStreamRequest_UserMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamRequest_UserMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamRequest_UserMessage) ProtoMessage() {}
+
+func (x *ChannelStreamRequest_UserMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamRequest_UserMessage.ProtoReflect.Descriptor instead.
+func (*ChannelStreamRequest_UserMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{9, 0}
+}
+
+func (m *ChannelStreamRequest_UserMessage) GetUserMsg() isChannelStreamRequest_UserMessage_UserMsg {
+	if m != nil {
+		return m.UserMsg
+	}
+	return nil
+}
+
+func (x *ChannelStreamRequest_UserMessage) GetNewUserMsg() *ChannelStreamRequest_UserMessage_NewUserMessage {
+	if x, ok := x.GetUserMsg().(*ChannelStreamRequest_UserMessage_NewUserMsg); ok {
+		return x.NewUserMsg
+	}
+	return nil
+}
+
+func (x *ChannelStreamRequest_UserMessage) GetEditUserMsg() *ChannelStreamRequest_UserMessage_EditUserMessage {
+	if x, ok := x.GetUserMsg().(*ChannelStreamRequest_UserMessage_EditUserMsg); ok {
+		return x.EditUserMsg
+	}
+	return nil
+}
+
+func (x *ChannelStreamRequest_UserMessage) GetDeleteUserMsg() *ChannelStreamRequest_UserMessage_DeleteUserMessage {
+	if x, ok := x.GetUserMsg().(*ChannelStreamRequest_UserMessage_DeleteUserMsg); ok {
+		return x.DeleteUserMsg
+	}
+	return nil
+}
+
+type isChannelStreamRequest_UserMessage_UserMsg interface {
+	isChannelStreamRequest_UserMessage_UserMsg()
+}
+
+type ChannelStreamRequest_UserMessage_NewUserMsg struct {
+	NewUserMsg *ChannelStreamRequest_UserMessage_NewUserMessage `protobuf:"bytes,1,opt,name=new_user_msg,json=newUserMsg,proto3,oneof"`
+}
+
+type ChannelStreamRequest_UserMessage_EditUserMsg struct {
+	EditUserMsg *ChannelStreamRequest_UserMessage_EditUserMessage `protobuf:"bytes,2,opt,name=edit_user_msg,json=editUserMsg,proto3,oneof"`
+}
+
+type ChannelStreamRequest_UserMessage_DeleteUserMsg struct {
+	DeleteUserMsg *ChannelStreamRequest_UserMessage_DeleteUserMessage `protobuf:"bytes,3,opt,name=delete_user_msg,json=deleteUserMsg,proto3,oneof"`
+}
+
+func (*ChannelStreamRequest_UserMessage_NewUserMsg) isChannelStreamRequest_UserMessage_UserMsg() {}
+
+func (*ChannelStreamRequest_UserMessage_EditUserMsg) isChannelStreamRequest_UserMessage_UserMsg() {}
+
+func (*ChannelStreamRequest_UserMessage_DeleteUserMsg) isChannelStreamRequest_UserMessage_UserMsg() {}
+
+type ChannelStreamRequest_UserMessage_NewUserMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Content string `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+}
+
+func (x *ChannelStreamRequest_UserMessage_NewUserMessage) Reset() {
+	*x = ChannelStreamRequest_UserMessage_NewUserMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamRequest_UserMessage_NewUserMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamRequest_UserMessage_NewUserMessage) ProtoMessage() {}
+
+func (x *ChannelStreamRequest_UserMessage_NewUserMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamRequest_UserMessage_NewUserMessage.ProtoReflect.Descriptor instead.
+func (*ChannelStreamRequest_UserMessage_NewUserMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{9, 0, 0}
+}
+
+func (x *ChannelStreamRequest_UserMessage_NewUserMessage) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+type ChannelStreamRequest_UserMessage_EditUserMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	MessageId uint64 `protobuf:"fixed64,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	Content   string `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+}
+
+func (x *ChannelStreamRequest_UserMessage_EditUserMessage) Reset() {
+	*x = ChannelStreamRequest_UserMessage_EditUserMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[21]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamRequest_UserMessage_EditUserMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamRequest_UserMessage_EditUserMessage) ProtoMessage() {}
+
+func (x *ChannelStreamRequest_UserMessage_EditUserMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[21]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamRequest_UserMessage_EditUserMessage.ProtoReflect.Descriptor instead.
+func (*ChannelStreamRequest_UserMessage_EditUserMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{9, 0, 1}
+}
+
+func (x *ChannelStreamRequest_UserMessage_EditUserMessage) GetMessageId() uint64 {
+	if x != nil {
+		return x.MessageId
+	}
+	return 0
+}
+
+func (x *ChannelStreamRequest_UserMessage_EditUserMessage) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+type ChannelStreamRequest_UserMessage_DeleteUserMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	MessageId uint64 `protobuf:"fixed64,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+}
+
+func (x *ChannelStreamRequest_UserMessage_DeleteUserMessage) Reset() {
+	*x = ChannelStreamRequest_UserMessage_DeleteUserMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[22]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamRequest_UserMessage_DeleteUserMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamRequest_UserMessage_DeleteUserMessage) ProtoMessage() {}
+
+func (x *ChannelStreamRequest_UserMessage_DeleteUserMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[22]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamRequest_UserMessage_DeleteUserMessage.ProtoReflect.Descriptor instead.
+func (*ChannelStreamRequest_UserMessage_DeleteUserMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{9, 0, 2}
+}
+
+func (x *ChannelStreamRequest_UserMessage_DeleteUserMessage) GetMessageId() uint64 {
+	if x != nil {
+		return x.MessageId
+	}
+	return 0
+}
+
+type ChannelStreamResponse_UserMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	MessageId uint64 `protobuf:"fixed64,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	// Types that are assignable to UserMsg:
+	//	*ChannelStreamResponse_UserMessage_NewAndUpdateUserMsg
+	//	*ChannelStreamResponse_UserMessage_DeleteUserMsg
+	UserMsg isChannelStreamResponse_UserMessage_UserMsg `protobuf_oneof:"user_msg"`
+}
+
+func (x *ChannelStreamResponse_UserMessage) Reset() {
+	*x = ChannelStreamResponse_UserMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[23]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamResponse_UserMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamResponse_UserMessage) ProtoMessage() {}
+
+func (x *ChannelStreamResponse_UserMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[23]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamResponse_UserMessage.ProtoReflect.Descriptor instead.
+func (*ChannelStreamResponse_UserMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{10, 0}
+}
+
+func (x *ChannelStreamResponse_UserMessage) GetMessageId() uint64 {
+	if x != nil {
+		return x.MessageId
+	}
+	return 0
+}
+
+func (m *ChannelStreamResponse_UserMessage) GetUserMsg() isChannelStreamResponse_UserMessage_UserMsg {
+	if m != nil {
+		return m.UserMsg
+	}
+	return nil
+}
+
+func (x *ChannelStreamResponse_UserMessage) GetNewAndUpdateUserMsg() *ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage {
+	if x, ok := x.GetUserMsg().(*ChannelStreamResponse_UserMessage_NewAndUpdateUserMsg); ok {
+		return x.NewAndUpdateUserMsg
+	}
+	return nil
+}
+
+func (x *ChannelStreamResponse_UserMessage) GetDeleteUserMsg() *ChannelStreamResponse_UserMessage_DeleteUserMessage {
+	if x, ok := x.GetUserMsg().(*ChannelStreamResponse_UserMessage_DeleteUserMsg); ok {
+		return x.DeleteUserMsg
+	}
+	return nil
+}
+
+type isChannelStreamResponse_UserMessage_UserMsg interface {
+	isChannelStreamResponse_UserMessage_UserMsg()
+}
+
+type ChannelStreamResponse_UserMessage_NewAndUpdateUserMsg struct {
+	NewAndUpdateUserMsg *ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage `protobuf:"bytes,2,opt,name=new_and_update_user_msg,json=newAndUpdateUserMsg,proto3,oneof"`
+}
+
+type ChannelStreamResponse_UserMessage_DeleteUserMsg struct {
+	DeleteUserMsg *ChannelStreamResponse_UserMessage_DeleteUserMessage `protobuf:"bytes,3,opt,name=delete_user_msg,json=deleteUserMsg,proto3,oneof"`
+}
+
+func (*ChannelStreamResponse_UserMessage_NewAndUpdateUserMsg) isChannelStreamResponse_UserMessage_UserMsg() {
+}
+
+func (*ChannelStreamResponse_UserMessage_DeleteUserMsg) isChannelStreamResponse_UserMessage_UserMsg() {
+}
+
+type ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Timestamp *timestamp.Timestamp `protobuf:"bytes,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Content   string               `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+}
+
+func (x *ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage) Reset() {
+	*x = ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[24]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage) ProtoMessage() {}
+
+func (x *ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[24]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage.ProtoReflect.Descriptor instead.
+func (*ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{10, 0, 0}
+}
+
+func (x *ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage) GetTimestamp() *timestamp.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+func (x *ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+type ChannelStreamResponse_UserMessage_DeleteUserMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ChannelStreamResponse_UserMessage_DeleteUserMessage) Reset() {
+	*x = ChannelStreamResponse_UserMessage_DeleteUserMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accord_proto_msgTypes[25]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChannelStreamResponse_UserMessage_DeleteUserMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelStreamResponse_UserMessage_DeleteUserMessage) ProtoMessage() {}
+
+func (x *ChannelStreamResponse_UserMessage_DeleteUserMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_accord_proto_msgTypes[25]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelStreamResponse_UserMessage_DeleteUserMessage.ProtoReflect.Descriptor instead.
+func (*ChannelStreamResponse_UserMessage_DeleteUserMessage) Descriptor() ([]byte, []int) {
+	return file_accord_proto_rawDescGZIP(), []int{10, 0, 1}
 }
 
 var File_accord_proto protoreflect.FileDescriptor
 
 var file_accord_proto_rawDesc = []byte{
 	0x0a, 0x0c, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x06,
-	0x41, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70,
+	0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xea, 0x03, 0x0a, 0x0d, 0x53, 0x74, 0x72, 0x65,
-	0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x63, 0x68, 0x61,
+	0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x43, 0x0a, 0x11, 0x41, 0x64, 0x64, 0x43, 0x68,
+	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04,
+	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x12, 0x1a, 0x0a, 0x08, 0x69, 0x73, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x08, 0x69, 0x73, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x22, 0x33, 0x0a, 0x12,
+	0x41, 0x64, 0x64, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52, 0x09, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49,
+	0x64, 0x22, 0x35, 0x0a, 0x14, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e,
+	0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x63, 0x68, 0x61,
 	0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52, 0x09, 0x63,
-	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x12, 0x3e, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72,
-	0x5f, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x41, 0x63, 0x63,
-	0x6f, 0x72, 0x64, 0x2e, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52,
-	0x07, 0x75, 0x73, 0x65, 0x72, 0x4d, 0x73, 0x67, 0x12, 0x3e, 0x0a, 0x08, 0x63, 0x6f, 0x6e, 0x66,
-	0x5f, 0x6d, 0x73, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x41, 0x63, 0x63,
-	0x6f, 0x72, 0x64, 0x2e, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52,
-	0x07, 0x63, 0x6f, 0x6e, 0x66, 0x4d, 0x73, 0x67, 0x1a, 0x5e, 0x0a, 0x0b, 0x55, 0x73, 0x65, 0x72,
-	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x35, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x21, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x53,
-	0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x55, 0x73, 0x65,
-	0x72, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x18,
-	0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a, 0x66, 0x0a, 0x0b, 0x43, 0x6f, 0x6e, 0x66,
-	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x35, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x21, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x53,
-	0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x43, 0x6f, 0x6e,
-	0x66, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x20,
-	0x0a, 0x0b, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72,
-	0x22, 0x39, 0x0a, 0x0b, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x12,
-	0x0c, 0x0a, 0x08, 0x53, 0x45, 0x4e, 0x44, 0x5f, 0x4d, 0x53, 0x47, 0x10, 0x00, 0x12, 0x0c, 0x0a,
-	0x08, 0x45, 0x44, 0x49, 0x54, 0x5f, 0x4d, 0x53, 0x47, 0x10, 0x01, 0x12, 0x0e, 0x0a, 0x0a, 0x44,
-	0x45, 0x4c, 0x45, 0x54, 0x45, 0x5f, 0x4d, 0x53, 0x47, 0x10, 0x02, 0x22, 0x30, 0x0a, 0x0b, 0x43,
-	0x6f, 0x6e, 0x66, 0x4d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x12, 0x10, 0x0a, 0x0c, 0x45, 0x44,
-	0x49, 0x54, 0x5f, 0x43, 0x48, 0x41, 0x4e, 0x4e, 0x45, 0x4c, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b,
-	0x45, 0x44, 0x49, 0x54, 0x5f, 0x53, 0x45, 0x52, 0x56, 0x45, 0x52, 0x10, 0x01, 0x42, 0x05, 0x0a,
-	0x03, 0x6d, 0x73, 0x67, 0x22, 0xd0, 0x02, 0x0a, 0x0e, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x38, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73,
-	0x74, 0x61, 0x6d, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f,
-	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d,
-	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x12, 0x3c, 0x0a, 0x07, 0x6e, 0x65, 0x77, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x21, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x53, 0x74, 0x72, 0x65,
-	0x61, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x4e, 0x65, 0x77, 0x4d, 0x65,
-	0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x06, 0x6e, 0x65, 0x77, 0x4d, 0x73, 0x67, 0x12,
-	0x45, 0x0a, 0x0a, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x53, 0x74, 0x72,
-	0x65, 0x61, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x09, 0x75, 0x70, 0x64,
-	0x61, 0x74, 0x65, 0x4d, 0x73, 0x67, 0x1a, 0x43, 0x0a, 0x0a, 0x4e, 0x65, 0x77, 0x4d, 0x65, 0x73,
-	0x73, 0x61, 0x67, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x5f, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52, 0x08, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x49,
+	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x22, 0x17, 0x0a, 0x15, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x14, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0xb8, 0x02, 0x0a, 0x13, 0x47, 0x65, 0x74, 0x43,
+	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x52, 0x0a, 0x0d, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x6d, 0x65, 0x74, 0x61, 0x73,
+	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e,
+	0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x4d, 0x65, 0x74, 0x61, 0x73,
+	0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x0c, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x4d, 0x65,
+	0x74, 0x61, 0x73, 0x1a, 0x63, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x4d, 0x65,
+	0x74, 0x61, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x69, 0x73, 0x5f, 0x70, 0x75, 0x62,
+	0x6c, 0x69, 0x63, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x69, 0x73, 0x50, 0x75, 0x62,
+	0x6c, 0x69, 0x63, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x73, 0x5f, 0x63,
+	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0c, 0x6d, 0x65, 0x6d, 0x62,
+	0x65, 0x72, 0x73, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x1a, 0x68, 0x0a, 0x11, 0x43, 0x68, 0x61, 0x6e,
+	0x6e, 0x65, 0x6c, 0x4d, 0x65, 0x74, 0x61, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a,
+	0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12,
+	0x3d, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27,
+	0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e,
+	0x65, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x43, 0x68, 0x61, 0x6e,
+	0x6e, 0x65, 0x6c, 0x4d, 0x65, 0x74, 0x61, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02,
+	0x38, 0x01, 0x22, 0x32, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x63, 0x68, 0x61, 0x6e, 0x6e,
+	0x65, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52, 0x09, 0x63, 0x68, 0x61,
+	0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x22, 0xb6, 0x03, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x43, 0x68,
+	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x40, 0x0a,
+	0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x26,
+	0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e,
+	0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e,
+	0x65, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x1a,
+	0x36, 0x0a, 0x04, 0x55, 0x73, 0x65, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e,
+	0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x05, 0x52, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x1a, 0xa5, 0x02, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x6e,
+	0x6e, 0x65, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x1d, 0x0a, 0x0a, 0x63, 0x68, 0x61, 0x6e, 0x6e,
+	0x65, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52, 0x09, 0x63, 0x68, 0x61,
+	0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x47, 0x0a, 0x05, 0x75, 0x73,
+	0x65, 0x72, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x31, 0x2e, 0x61, 0x63, 0x63, 0x6f,
+	0x72, 0x64, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x6e, 0x66,
+	0x6f, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x05, 0x75, 0x73,
+	0x65, 0x72, 0x73, 0x12, 0x22, 0x0a, 0x0d, 0x70, 0x69, 0x6e, 0x6e, 0x65, 0x64, 0x5f, 0x6d, 0x73,
+	0x67, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x70, 0x69, 0x6e, 0x6e,
+	0x65, 0x64, 0x4d, 0x73, 0x67, 0x49, 0x64, 0x12, 0x1b, 0x0a, 0x09, 0x69, 0x73, 0x5f, 0x70, 0x75,
+	0x62, 0x6c, 0x69, 0x63, 0x18, 0x05, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x69, 0x73, 0x50, 0x75,
+	0x62, 0x6c, 0x69, 0x63, 0x1a, 0x59, 0x0a, 0x0a, 0x55, 0x73, 0x65, 0x72, 0x73, 0x45, 0x6e, 0x74,
+	0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x6b, 0x65, 0x79, 0x12, 0x35, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x47, 0x65, 0x74,
+	0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e,
+	0x55, 0x73, 0x65, 0x72, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22,
+	0xf0, 0x03, 0x0a, 0x14, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69,
+	0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x52, 0x0a, 0x08, 0x6e, 0x61, 0x6d, 0x65,
+	0x5f, 0x6d, 0x73, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x35, 0x2e, 0x61, 0x63, 0x63,
+	0x6f, 0x72, 0x64, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69,
+	0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x43, 0x68, 0x61,
+	0x6e, 0x6e, 0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x48, 0x00, 0x52, 0x07, 0x6e, 0x61, 0x6d, 0x65, 0x4d, 0x73, 0x67, 0x12, 0x52, 0x0a, 0x08,
+	0x72, 0x6f, 0x6c, 0x65, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x35,
+	0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x52, 0x6f, 0x6c,
+	0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x07, 0x72, 0x6f, 0x6c, 0x65, 0x4d, 0x73, 0x67,
+	0x12, 0x4f, 0x0a, 0x07, 0x70, 0x69, 0x6e, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x34, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e,
+	0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e,
+	0x50, 0x69, 0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x06, 0x70, 0x69, 0x6e, 0x4d, 0x73,
+	0x67, 0x1a, 0x44, 0x0a, 0x18, 0x4e, 0x61, 0x6d, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c,
+	0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x28, 0x0a,
+	0x10, 0x6e, 0x65, 0x77, 0x5f, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x6e, 0x61, 0x6d,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x6e, 0x65, 0x77, 0x43, 0x68, 0x61, 0x6e,
+	0x6e, 0x65, 0x6c, 0x4e, 0x61, 0x6d, 0x65, 0x1a, 0x58, 0x0a, 0x18, 0x52, 0x6f, 0x6c, 0x65, 0x43,
+	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x12,
+	0x20, 0x0a, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0c, 0x2e,
+	0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x52, 0x6f, 0x6c, 0x65, 0x52, 0x04, 0x72, 0x6f, 0x6c,
+	0x65, 0x1a, 0x38, 0x0a, 0x17, 0x50, 0x69, 0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x1d, 0x0a, 0x0a,
+	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x06,
+	0x52, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x64, 0x42, 0x05, 0x0a, 0x03, 0x6d,
+	0x73, 0x67, 0x22, 0xad, 0x05, 0x0a, 0x14, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74,
+	0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x63,
+	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52,
+	0x09, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x12, 0x45, 0x0a, 0x08, 0x75, 0x73,
+	0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x61,
+	0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72,
+	0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x07, 0x75, 0x73, 0x65, 0x72, 0x4d, 0x73,
+	0x67, 0x12, 0x3d, 0x0a, 0x0a, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x5f, 0x6d, 0x73, 0x67, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x43,
+	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x09, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x73, 0x67,
+	0x1a, 0xe8, 0x03, 0x0a, 0x0b, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x12, 0x5b, 0x0a, 0x0c, 0x6e, 0x65, 0x77, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x37, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e,
+	0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x2e, 0x4e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48,
+	0x00, 0x52, 0x0a, 0x6e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x73, 0x67, 0x12, 0x5e, 0x0a,
+	0x0d, 0x65, 0x64, 0x69, 0x74, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x38, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x43, 0x68,
+	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x45,
+	0x64, 0x69, 0x74, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00,
+	0x52, 0x0b, 0x65, 0x64, 0x69, 0x74, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x73, 0x67, 0x12, 0x64, 0x0a,
+	0x0f, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x3a, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e,
+	0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x48, 0x00, 0x52, 0x0d, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72,
+	0x4d, 0x73, 0x67, 0x1a, 0x2a, 0x0a, 0x0e, 0x4e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a,
+	0x4a, 0x0a, 0x0f, 0x45, 0x64, 0x69, 0x74, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49,
 	0x64, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a, 0x31, 0x0a, 0x0d, 0x55,
-	0x70, 0x64, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x20, 0x0a, 0x0b,
-	0x70, 0x6c, 0x61, 0x63, 0x65, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0b, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x42, 0x07,
-	0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x32, 0x45, 0x0a, 0x04, 0x43, 0x68, 0x61, 0x74, 0x12,
-	0x3d, 0x0a, 0x06, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x15, 0x2e, 0x41, 0x63, 0x63, 0x6f,
-	0x72, 0x64, 0x2e, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x16, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x30, 0x01, 0x42, 0x06,
-	0x5a, 0x04, 0x2e, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a, 0x32, 0x0a, 0x11, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x06, 0x52, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x64, 0x42,
+	0x0a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67, 0x42, 0x05, 0x0a, 0x03, 0x6d,
+	0x73, 0x67, 0x22, 0xc6, 0x04, 0x0a, 0x15, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74,
+	0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x46, 0x0a, 0x08,
+	0x75, 0x73, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29,
+	0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53,
+	0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x55, 0x73,
+	0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x07, 0x75, 0x73, 0x65,
+	0x72, 0x4d, 0x73, 0x67, 0x12, 0x3d, 0x0a, 0x0a, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x5f, 0x6d,
+	0x73, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72,
+	0x64, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x09, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67,
+	0x4d, 0x73, 0x67, 0x1a, 0x9e, 0x03, 0x0a, 0x0b, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x06, 0x52, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x49, 0x64, 0x12, 0x79, 0x0a, 0x17, 0x6e, 0x65, 0x77, 0x5f, 0x61, 0x6e, 0x64, 0x5f, 0x75, 0x70,
+	0x64, 0x61, 0x74, 0x65, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x41, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x43, 0x68, 0x61,
+	0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x4e,
+	0x65, 0x77, 0x41, 0x6e, 0x64, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x13, 0x6e, 0x65, 0x77, 0x41, 0x6e, 0x64,
+	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x73, 0x67, 0x12, 0x65, 0x0a,
+	0x0f, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6d, 0x73, 0x67,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x3b, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e,
+	0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0d, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65,
+	0x72, 0x4d, 0x73, 0x67, 0x1a, 0x6d, 0x0a, 0x17, 0x4e, 0x65, 0x77, 0x41, 0x6e, 0x64, 0x55, 0x70,
+	0x64, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12,
+	0x38, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09,
+	0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e,
+	0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74,
+	0x65, 0x6e, 0x74, 0x1a, 0x13, 0x0a, 0x11, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65,
+	0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x42, 0x0a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72,
+	0x5f, 0x6d, 0x73, 0x67, 0x42, 0x05, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x2a, 0x89, 0x01, 0x0a, 0x0a,
+	0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x12, 0x55, 0x4e,
+	0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x5f, 0x50, 0x45, 0x52, 0x4d, 0x49, 0x53, 0x53, 0x49, 0x4f, 0x4e,
+	0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x52, 0x45, 0x41, 0x44, 0x10, 0x01, 0x12, 0x09, 0x0a, 0x05,
+	0x57, 0x52, 0x49, 0x54, 0x45, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x44, 0x45, 0x4c, 0x45, 0x54,
+	0x45, 0x10, 0x03, 0x12, 0x0a, 0x0a, 0x06, 0x4d, 0x4f, 0x44, 0x49, 0x46, 0x59, 0x10, 0x04, 0x12,
+	0x08, 0x0a, 0x04, 0x4b, 0x49, 0x43, 0x4b, 0x10, 0x05, 0x12, 0x07, 0x0a, 0x03, 0x42, 0x41, 0x4e,
+	0x10, 0x06, 0x12, 0x0f, 0x0a, 0x0b, 0x41, 0x53, 0x53, 0x49, 0x47, 0x4e, 0x5f, 0x52, 0x4f, 0x4c,
+	0x45, 0x10, 0x07, 0x12, 0x12, 0x0a, 0x0e, 0x52, 0x45, 0x4d, 0x4f, 0x56, 0x45, 0x5f, 0x43, 0x48,
+	0x41, 0x4e, 0x4e, 0x45, 0x4c, 0x10, 0x08, 0x2a, 0x4f, 0x0a, 0x04, 0x52, 0x6f, 0x6c, 0x65, 0x12,
+	0x10, 0x0a, 0x0c, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x5f, 0x52, 0x4f, 0x4c, 0x45, 0x10,
+	0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x53, 0x55, 0x42, 0x53, 0x43, 0x52, 0x49, 0x42, 0x45, 0x52, 0x10,
+	0x01, 0x12, 0x0a, 0x0a, 0x06, 0x4d, 0x45, 0x4d, 0x42, 0x45, 0x52, 0x10, 0x02, 0x12, 0x09, 0x0a,
+	0x05, 0x41, 0x44, 0x4d, 0x49, 0x4e, 0x10, 0x03, 0x12, 0x0e, 0x0a, 0x0a, 0x53, 0x55, 0x50, 0x45,
+	0x52, 0x41, 0x44, 0x4d, 0x49, 0x4e, 0x10, 0x04, 0x32, 0x82, 0x03, 0x0a, 0x04, 0x43, 0x68, 0x61,
+	0x74, 0x12, 0x45, 0x0a, 0x0a, 0x41, 0x64, 0x64, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12,
+	0x19, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x41, 0x64, 0x64, 0x43, 0x68, 0x61, 0x6e,
+	0x6e, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x61, 0x63, 0x63,
+	0x6f, 0x72, 0x64, 0x2e, 0x41, 0x64, 0x64, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x4e, 0x0a, 0x0d, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x1c, 0x2e, 0x61, 0x63, 0x63, 0x6f,
+	0x72, 0x64, 0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1d, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64,
+	0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x48, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x43,
+	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x12, 0x1a, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64,
+	0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x1b, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x47, 0x65, 0x74,
+	0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0x00, 0x12, 0x45, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c,
+	0x12, 0x19, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72, 0x64, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61,
+	0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x61, 0x63,
+	0x63, 0x6f, 0x72, 0x64, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x52, 0x0a, 0x0d, 0x43, 0x68, 0x61,
+	0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x1c, 0x2e, 0x61, 0x63, 0x63,
+	0x6f, 0x72, 0x64, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x65, 0x61,
+	0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1d, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x72,
+	0x64, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x30, 0x01, 0x42, 0x06, 0x5a,
+	0x04, 0x2e, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -592,33 +1814,73 @@ func file_accord_proto_rawDescGZIP() []byte {
 }
 
 var file_accord_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_accord_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_accord_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_accord_proto_goTypes = []interface{}{
-	(StreamRequest_UserMsgType)(0),       // 0: Accord.StreamRequest.UserMsgType
-	(StreamRequest_ConfMsgType)(0),       // 1: Accord.StreamRequest.ConfMsgType
-	(*StreamRequest)(nil),                // 2: Accord.StreamRequest
-	(*StreamResponse)(nil),               // 3: Accord.StreamResponse
-	(*StreamRequest_UserMessage)(nil),    // 4: Accord.StreamRequest.UserMessage
-	(*StreamRequest_ConfMessage)(nil),    // 5: Accord.StreamRequest.ConfMessage
-	(*StreamResponse_NewMessage)(nil),    // 6: Accord.StreamResponse.NewMessage
-	(*StreamResponse_UpdateMessage)(nil), // 7: Accord.StreamResponse.UpdateMessage
-	(*timestamp.Timestamp)(nil),          // 8: google.protobuf.Timestamp
+	(Permission)(0),                         // 0: accord.Permission
+	(Role)(0),                               // 1: accord.Role
+	(*AddChannelRequest)(nil),               // 2: accord.AddChannelRequest
+	(*AddChannelResponse)(nil),              // 3: accord.AddChannelResponse
+	(*RemoveChannelRequest)(nil),            // 4: accord.RemoveChannelRequest
+	(*RemoveChannelResponse)(nil),           // 5: accord.RemoveChannelResponse
+	(*GetChannelsRequest)(nil),              // 6: accord.GetChannelsRequest
+	(*GetChannelsResponse)(nil),             // 7: accord.GetChannelsResponse
+	(*GetChannelRequest)(nil),               // 8: accord.GetChannelRequest
+	(*GetChannelResponse)(nil),              // 9: accord.GetChannelResponse
+	(*ChannelConfigMessage)(nil),            // 10: accord.ChannelConfigMessage
+	(*ChannelStreamRequest)(nil),            // 11: accord.ChannelStreamRequest
+	(*ChannelStreamResponse)(nil),           // 12: accord.ChannelStreamResponse
+	(*GetChannelsResponse_ChannelMeta)(nil), // 13: accord.GetChannelsResponse.ChannelMeta
+	nil,                                     // 14: accord.GetChannelsResponse.ChannelMetasEntry
+	(*GetChannelResponse_User)(nil),         // 15: accord.GetChannelResponse.User
+	(*GetChannelResponse_ChannelInfo)(nil),  // 16: accord.GetChannelResponse.ChannelInfo
+	nil,                                     // 17: accord.GetChannelResponse.ChannelInfo.UsersEntry
+	(*ChannelConfigMessage_NameChannelConfigMessage)(nil),             // 18: accord.ChannelConfigMessage.NameChannelConfigMessage
+	(*ChannelConfigMessage_RoleChannelConfigMessage)(nil),             // 19: accord.ChannelConfigMessage.RoleChannelConfigMessage
+	(*ChannelConfigMessage_PinChannelConfigMessage)(nil),              // 20: accord.ChannelConfigMessage.PinChannelConfigMessage
+	(*ChannelStreamRequest_UserMessage)(nil),                          // 21: accord.ChannelStreamRequest.UserMessage
+	(*ChannelStreamRequest_UserMessage_NewUserMessage)(nil),           // 22: accord.ChannelStreamRequest.UserMessage.NewUserMessage
+	(*ChannelStreamRequest_UserMessage_EditUserMessage)(nil),          // 23: accord.ChannelStreamRequest.UserMessage.EditUserMessage
+	(*ChannelStreamRequest_UserMessage_DeleteUserMessage)(nil),        // 24: accord.ChannelStreamRequest.UserMessage.DeleteUserMessage
+	(*ChannelStreamResponse_UserMessage)(nil),                         // 25: accord.ChannelStreamResponse.UserMessage
+	(*ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage)(nil), // 26: accord.ChannelStreamResponse.UserMessage.NewAndUpdateUserMessage
+	(*ChannelStreamResponse_UserMessage_DeleteUserMessage)(nil),       // 27: accord.ChannelStreamResponse.UserMessage.DeleteUserMessage
+	(*timestamp.Timestamp)(nil),                                       // 28: google.protobuf.Timestamp
 }
 var file_accord_proto_depIdxs = []int32{
-	4, // 0: Accord.StreamRequest.user_msg:type_name -> Accord.StreamRequest.UserMessage
-	5, // 1: Accord.StreamRequest.conf_msg:type_name -> Accord.StreamRequest.ConfMessage
-	8, // 2: Accord.StreamResponse.timestamp:type_name -> google.protobuf.Timestamp
-	6, // 3: Accord.StreamResponse.new_msg:type_name -> Accord.StreamResponse.NewMessage
-	7, // 4: Accord.StreamResponse.update_msg:type_name -> Accord.StreamResponse.UpdateMessage
-	0, // 5: Accord.StreamRequest.UserMessage.type:type_name -> Accord.StreamRequest.UserMsgType
-	1, // 6: Accord.StreamRequest.ConfMessage.type:type_name -> Accord.StreamRequest.ConfMsgType
-	2, // 7: Accord.Chat.Stream:input_type -> Accord.StreamRequest
-	3, // 8: Accord.Chat.Stream:output_type -> Accord.StreamResponse
-	8, // [8:9] is the sub-list for method output_type
-	7, // [7:8] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	14, // 0: accord.GetChannelsResponse.channel_metas:type_name -> accord.GetChannelsResponse.ChannelMetasEntry
+	16, // 1: accord.GetChannelResponse.channel:type_name -> accord.GetChannelResponse.ChannelInfo
+	18, // 2: accord.ChannelConfigMessage.name_msg:type_name -> accord.ChannelConfigMessage.NameChannelConfigMessage
+	19, // 3: accord.ChannelConfigMessage.role_msg:type_name -> accord.ChannelConfigMessage.RoleChannelConfigMessage
+	20, // 4: accord.ChannelConfigMessage.pin_msg:type_name -> accord.ChannelConfigMessage.PinChannelConfigMessage
+	21, // 5: accord.ChannelStreamRequest.user_msg:type_name -> accord.ChannelStreamRequest.UserMessage
+	10, // 6: accord.ChannelStreamRequest.config_msg:type_name -> accord.ChannelConfigMessage
+	25, // 7: accord.ChannelStreamResponse.user_msg:type_name -> accord.ChannelStreamResponse.UserMessage
+	10, // 8: accord.ChannelStreamResponse.config_msg:type_name -> accord.ChannelConfigMessage
+	13, // 9: accord.GetChannelsResponse.ChannelMetasEntry.value:type_name -> accord.GetChannelsResponse.ChannelMeta
+	17, // 10: accord.GetChannelResponse.ChannelInfo.users:type_name -> accord.GetChannelResponse.ChannelInfo.UsersEntry
+	15, // 11: accord.GetChannelResponse.ChannelInfo.UsersEntry.value:type_name -> accord.GetChannelResponse.User
+	1,  // 12: accord.ChannelConfigMessage.RoleChannelConfigMessage.role:type_name -> accord.Role
+	22, // 13: accord.ChannelStreamRequest.UserMessage.new_user_msg:type_name -> accord.ChannelStreamRequest.UserMessage.NewUserMessage
+	23, // 14: accord.ChannelStreamRequest.UserMessage.edit_user_msg:type_name -> accord.ChannelStreamRequest.UserMessage.EditUserMessage
+	24, // 15: accord.ChannelStreamRequest.UserMessage.delete_user_msg:type_name -> accord.ChannelStreamRequest.UserMessage.DeleteUserMessage
+	26, // 16: accord.ChannelStreamResponse.UserMessage.new_and_update_user_msg:type_name -> accord.ChannelStreamResponse.UserMessage.NewAndUpdateUserMessage
+	27, // 17: accord.ChannelStreamResponse.UserMessage.delete_user_msg:type_name -> accord.ChannelStreamResponse.UserMessage.DeleteUserMessage
+	28, // 18: accord.ChannelStreamResponse.UserMessage.NewAndUpdateUserMessage.timestamp:type_name -> google.protobuf.Timestamp
+	2,  // 19: accord.Chat.AddChannel:input_type -> accord.AddChannelRequest
+	4,  // 20: accord.Chat.RemoveChannel:input_type -> accord.RemoveChannelRequest
+	6,  // 21: accord.Chat.GetChannels:input_type -> accord.GetChannelsRequest
+	8,  // 22: accord.Chat.GetChannel:input_type -> accord.GetChannelRequest
+	11, // 23: accord.Chat.ChannelStream:input_type -> accord.ChannelStreamRequest
+	3,  // 24: accord.Chat.AddChannel:output_type -> accord.AddChannelResponse
+	5,  // 25: accord.Chat.RemoveChannel:output_type -> accord.RemoveChannelResponse
+	7,  // 26: accord.Chat.GetChannels:output_type -> accord.GetChannelsResponse
+	9,  // 27: accord.Chat.GetChannel:output_type -> accord.GetChannelResponse
+	12, // 28: accord.Chat.ChannelStream:output_type -> accord.ChannelStreamResponse
+	24, // [24:29] is the sub-list for method output_type
+	19, // [19:24] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_accord_proto_init() }
@@ -628,7 +1890,7 @@ func file_accord_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_accord_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StreamRequest); i {
+			switch v := v.(*AddChannelRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -640,7 +1902,7 @@ func file_accord_proto_init() {
 			}
 		}
 		file_accord_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StreamResponse); i {
+			switch v := v.(*AddChannelResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -652,7 +1914,7 @@ func file_accord_proto_init() {
 			}
 		}
 		file_accord_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StreamRequest_UserMessage); i {
+			switch v := v.(*RemoveChannelRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -664,7 +1926,7 @@ func file_accord_proto_init() {
 			}
 		}
 		file_accord_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StreamRequest_ConfMessage); i {
+			switch v := v.(*RemoveChannelResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -676,7 +1938,7 @@ func file_accord_proto_init() {
 			}
 		}
 		file_accord_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StreamResponse_NewMessage); i {
+			switch v := v.(*GetChannelsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -688,7 +1950,223 @@ func file_accord_proto_init() {
 			}
 		}
 		file_accord_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StreamResponse_UpdateMessage); i {
+			switch v := v.(*GetChannelsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetChannelRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetChannelResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelConfigMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetChannelsResponse_ChannelMeta); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetChannelResponse_User); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetChannelResponse_ChannelInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelConfigMessage_NameChannelConfigMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelConfigMessage_RoleChannelConfigMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelConfigMessage_PinChannelConfigMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamRequest_UserMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamRequest_UserMessage_NewUserMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamRequest_UserMessage_EditUserMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamRequest_UserMessage_DeleteUserMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamResponse_UserMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamResponse_UserMessage_NewAndUpdateUserMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accord_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChannelStreamResponse_UserMessage_DeleteUserMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -700,13 +2178,27 @@ func file_accord_proto_init() {
 			}
 		}
 	}
-	file_accord_proto_msgTypes[0].OneofWrappers = []interface{}{
-		(*StreamRequest_UserMsg)(nil),
-		(*StreamRequest_ConfMsg)(nil),
+	file_accord_proto_msgTypes[8].OneofWrappers = []interface{}{
+		(*ChannelConfigMessage_NameMsg)(nil),
+		(*ChannelConfigMessage_RoleMsg)(nil),
+		(*ChannelConfigMessage_PinMsg)(nil),
 	}
-	file_accord_proto_msgTypes[1].OneofWrappers = []interface{}{
-		(*StreamResponse_NewMsg)(nil),
-		(*StreamResponse_UpdateMsg)(nil),
+	file_accord_proto_msgTypes[9].OneofWrappers = []interface{}{
+		(*ChannelStreamRequest_UserMsg)(nil),
+		(*ChannelStreamRequest_ConfigMsg)(nil),
+	}
+	file_accord_proto_msgTypes[10].OneofWrappers = []interface{}{
+		(*ChannelStreamResponse_UserMsg)(nil),
+		(*ChannelStreamResponse_ConfigMsg)(nil),
+	}
+	file_accord_proto_msgTypes[19].OneofWrappers = []interface{}{
+		(*ChannelStreamRequest_UserMessage_NewUserMsg)(nil),
+		(*ChannelStreamRequest_UserMessage_EditUserMsg)(nil),
+		(*ChannelStreamRequest_UserMessage_DeleteUserMsg)(nil),
+	}
+	file_accord_proto_msgTypes[23].OneofWrappers = []interface{}{
+		(*ChannelStreamResponse_UserMessage_NewAndUpdateUserMsg)(nil),
+		(*ChannelStreamResponse_UserMessage_DeleteUserMsg)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -714,7 +2206,7 @@ func file_accord_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_accord_proto_rawDesc,
 			NumEnums:      2,
-			NumMessages:   6,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -741,7 +2233,18 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type ChatClient interface {
-	Stream(ctx context.Context, opts ...grpc.CallOption) (Chat_StreamClient, error)
+	AddChannel(ctx context.Context, in *AddChannelRequest, opts ...grpc.CallOption) (*AddChannelResponse, error)
+	RemoveChannel(ctx context.Context, in *RemoveChannelRequest, opts ...grpc.CallOption) (*RemoveChannelResponse, error)
+	GetChannels(ctx context.Context, in *GetChannelsRequest, opts ...grpc.CallOption) (*GetChannelsResponse, error)
+	GetChannel(ctx context.Context, in *GetChannelRequest, opts ...grpc.CallOption) (*GetChannelResponse, error)
+	// Bidirectional stream of user and channel configuration messages
+	// with a single channel.
+	// NOTE: the fields and nested messages were designed with a single
+	// channel in mind. So while it may be possible to use this RPC to
+	// stream with multiple channels simultaneously, no adequate result
+	// should be expected. Thus, it is developer's responsibility to make
+	// sure that separate Stream RPCs are invoked for each channel.
+	ChannelStream(ctx context.Context, opts ...grpc.CallOption) (Chat_ChannelStreamClient, error)
 }
 
 type chatClient struct {
@@ -752,31 +2255,67 @@ func NewChatClient(cc grpc.ClientConnInterface) ChatClient {
 	return &chatClient{cc}
 }
 
-func (c *chatClient) Stream(ctx context.Context, opts ...grpc.CallOption) (Chat_StreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Chat_serviceDesc.Streams[0], "/Accord.Chat/Stream", opts...)
+func (c *chatClient) AddChannel(ctx context.Context, in *AddChannelRequest, opts ...grpc.CallOption) (*AddChannelResponse, error) {
+	out := new(AddChannelResponse)
+	err := c.cc.Invoke(ctx, "/accord.Chat/AddChannel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &chatStreamClient{stream}
+	return out, nil
+}
+
+func (c *chatClient) RemoveChannel(ctx context.Context, in *RemoveChannelRequest, opts ...grpc.CallOption) (*RemoveChannelResponse, error) {
+	out := new(RemoveChannelResponse)
+	err := c.cc.Invoke(ctx, "/accord.Chat/RemoveChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) GetChannels(ctx context.Context, in *GetChannelsRequest, opts ...grpc.CallOption) (*GetChannelsResponse, error) {
+	out := new(GetChannelsResponse)
+	err := c.cc.Invoke(ctx, "/accord.Chat/GetChannels", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) GetChannel(ctx context.Context, in *GetChannelRequest, opts ...grpc.CallOption) (*GetChannelResponse, error) {
+	out := new(GetChannelResponse)
+	err := c.cc.Invoke(ctx, "/accord.Chat/GetChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) ChannelStream(ctx context.Context, opts ...grpc.CallOption) (Chat_ChannelStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Chat_serviceDesc.Streams[0], "/accord.Chat/ChannelStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &chatChannelStreamClient{stream}
 	return x, nil
 }
 
-type Chat_StreamClient interface {
-	Send(*StreamRequest) error
-	Recv() (*StreamResponse, error)
+type Chat_ChannelStreamClient interface {
+	Send(*ChannelStreamRequest) error
+	Recv() (*ChannelStreamResponse, error)
 	grpc.ClientStream
 }
 
-type chatStreamClient struct {
+type chatChannelStreamClient struct {
 	grpc.ClientStream
 }
 
-func (x *chatStreamClient) Send(m *StreamRequest) error {
+func (x *chatChannelStreamClient) Send(m *ChannelStreamRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *chatStreamClient) Recv() (*StreamResponse, error) {
-	m := new(StreamResponse)
+func (x *chatChannelStreamClient) Recv() (*ChannelStreamResponse, error) {
+	m := new(ChannelStreamResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -785,41 +2324,136 @@ func (x *chatStreamClient) Recv() (*StreamResponse, error) {
 
 // ChatServer is the server API for Chat service.
 type ChatServer interface {
-	Stream(Chat_StreamServer) error
+	AddChannel(context.Context, *AddChannelRequest) (*AddChannelResponse, error)
+	RemoveChannel(context.Context, *RemoveChannelRequest) (*RemoveChannelResponse, error)
+	GetChannels(context.Context, *GetChannelsRequest) (*GetChannelsResponse, error)
+	GetChannel(context.Context, *GetChannelRequest) (*GetChannelResponse, error)
+	// Bidirectional stream of user and channel configuration messages
+	// with a single channel.
+	// NOTE: the fields and nested messages were designed with a single
+	// channel in mind. So while it may be possible to use this RPC to
+	// stream with multiple channels simultaneously, no adequate result
+	// should be expected. Thus, it is developer's responsibility to make
+	// sure that separate Stream RPCs are invoked for each channel.
+	ChannelStream(Chat_ChannelStreamServer) error
 }
 
 // UnimplementedChatServer can be embedded to have forward compatible implementations.
 type UnimplementedChatServer struct {
 }
 
-func (*UnimplementedChatServer) Stream(Chat_StreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method Stream not implemented")
+func (*UnimplementedChatServer) AddChannel(context.Context, *AddChannelRequest) (*AddChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddChannel not implemented")
+}
+func (*UnimplementedChatServer) RemoveChannel(context.Context, *RemoveChannelRequest) (*RemoveChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveChannel not implemented")
+}
+func (*UnimplementedChatServer) GetChannels(context.Context, *GetChannelsRequest) (*GetChannelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChannels not implemented")
+}
+func (*UnimplementedChatServer) GetChannel(context.Context, *GetChannelRequest) (*GetChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChannel not implemented")
+}
+func (*UnimplementedChatServer) ChannelStream(Chat_ChannelStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method ChannelStream not implemented")
 }
 
 func RegisterChatServer(s *grpc.Server, srv ChatServer) {
 	s.RegisterService(&_Chat_serviceDesc, srv)
 }
 
-func _Chat_Stream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ChatServer).Stream(&chatStreamServer{stream})
+func _Chat_AddChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).AddChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/accord.Chat/AddChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).AddChannel(ctx, req.(*AddChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-type Chat_StreamServer interface {
-	Send(*StreamResponse) error
-	Recv() (*StreamRequest, error)
+func _Chat_RemoveChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).RemoveChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/accord.Chat/RemoveChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).RemoveChannel(ctx, req.(*RemoveChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_GetChannels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChannelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).GetChannels(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/accord.Chat/GetChannels",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).GetChannels(ctx, req.(*GetChannelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_GetChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).GetChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/accord.Chat/GetChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).GetChannel(ctx, req.(*GetChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_ChannelStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ChatServer).ChannelStream(&chatChannelStreamServer{stream})
+}
+
+type Chat_ChannelStreamServer interface {
+	Send(*ChannelStreamResponse) error
+	Recv() (*ChannelStreamRequest, error)
 	grpc.ServerStream
 }
 
-type chatStreamServer struct {
+type chatChannelStreamServer struct {
 	grpc.ServerStream
 }
 
-func (x *chatStreamServer) Send(m *StreamResponse) error {
+func (x *chatChannelStreamServer) Send(m *ChannelStreamResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *chatStreamServer) Recv() (*StreamRequest, error) {
-	m := new(StreamRequest)
+func (x *chatChannelStreamServer) Recv() (*ChannelStreamRequest, error) {
+	m := new(ChannelStreamRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -827,13 +2461,30 @@ func (x *chatStreamServer) Recv() (*StreamRequest, error) {
 }
 
 var _Chat_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "Accord.Chat",
+	ServiceName: "accord.Chat",
 	HandlerType: (*ChatServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AddChannel",
+			Handler:    _Chat_AddChannel_Handler,
+		},
+		{
+			MethodName: "RemoveChannel",
+			Handler:    _Chat_RemoveChannel_Handler,
+		},
+		{
+			MethodName: "GetChannels",
+			Handler:    _Chat_GetChannels_Handler,
+		},
+		{
+			MethodName: "GetChannel",
+			Handler:    _Chat_GetChannel_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "Stream",
-			Handler:       _Chat_Stream_Handler,
+			StreamName:    "ChannelStream",
+			Handler:       _Chat_ChannelStream_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
